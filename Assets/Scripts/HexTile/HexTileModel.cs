@@ -10,6 +10,7 @@
         //--------------        
         public Point3 Position;
         public Point3 Scale;
+        public Point3 Rotation;
         public string MaterialName;
         public string TextureName;
         public int MovementCost;

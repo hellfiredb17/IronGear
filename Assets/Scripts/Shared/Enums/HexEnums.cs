@@ -30,7 +30,7 @@ namespace HexWorld
 
     public enum HexLayout
     {
-        Vertical,
-        Horizontal
+        Flat,
+        Pointy
     }
 }

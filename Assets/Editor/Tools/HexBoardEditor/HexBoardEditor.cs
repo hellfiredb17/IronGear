@@ -61,6 +61,15 @@ public class HexBoardEditor : EditorWindow
 
     private void OnDisable()
     {        
+        if(_boardTool)
+        {
+            _boardTool.Clean();
+        }
+        // Stop the editor
+        if (EditorApplication.isPlaying)
+        {
+            EditorApplication.ExitPlaymode();
+        }
     }
 
     private static void LoadSceneAndPlay()
@@ -210,8 +219,7 @@ public class HexBoardEditor : EditorWindow
             // Layout
             EditorGUILayout.LabelField("Hex Layout", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            {
-                EditorGUILayout.LabelField("X:");
+            {                
                 System.Enum selected = EditorGUILayout.EnumPopup(_model.Layout);
                 if ((HexLayout)selected != _model.Layout)
                 {
@@ -256,34 +264,54 @@ public class HexBoardEditor : EditorWindow
             return;
         }
 
-        // Save
-        if (ValidateModel())
+        GUILayout.BeginVertical();
         {
-            if (GUILayout.Button("Save"))
-            {
-                string file = _model.ID + ".json";
-                string json = JsonUtility.ToJson(_model);
+            GUILayout.Space(10);
 
-                File.WriteAllText(_jsonPath + file, json);
-                AssetDatabase.Refresh();
-                Debug.LogWarning("Json saved: " + _jsonPath + file);
-                LoadHexBoardFiles();
+            // Board data
+            GUILayout.Label("---- Data ----", EditorStyles.boldLabel);
+            GUILayout.Label("Name: " + _model.ID);
+            GUILayout.Label("Size: " + _model.Size);
+            GUILayout.Label("Scale: " + _model.Scale);
+            GUILayout.Label("Layout: " + _model.Layout);
+
+            GUILayout.Space(10);
+
+            // Edit
+            GUILayout.Label("---- Edit ----", EditorStyles.boldLabel);
+
+            GUILayout.Space(10);
+
+            // Save
+            if (ValidateModel())
+            {
+                if (GUILayout.Button("Save"))
+                {
+                    string file = _model.ID + ".json";
+                    string json = JsonUtility.ToJson(_model);
+
+                    File.WriteAllText(_jsonPath + file, json);
+                    AssetDatabase.Refresh();
+                    Debug.LogWarning("Json saved: " + _jsonPath + file);
+                    LoadHexBoardFiles();
+                }
+
+                if (GUILayout.Button("Return"))
+                {
+                    ExitEdit();
+                    _state = State.MainMenu;
+                }
             }
-
-            if (GUILayout.Button("Return"))
+            else
             {
-                ExitEdit();
-                _state = State.MainMenu;
+                if (GUILayout.Button("Return"))
+                {
+                    ExitEdit();
+                    _state = State.MainMenu;
+                }
             }
         }
-        else
-        {
-            if (GUILayout.Button("Return"))
-            {
-                ExitEdit();
-                _state = State.MainMenu;
-            }
-        }
+        GUILayout.EndVertical();
     }
 
     //---- Edit Functions
@@ -332,8 +360,8 @@ public class HexBoardEditor : EditorWindow
                 _model.AddHexTile(tile);
             }
 
-            // TODO - calulate the positions of each hex tile
-            // based on size, scale, and layout
+            // Build out the model data
+            BuildHexBoard(_model);
         }
 
         // Send model data to scene to build board
@@ -342,6 +370,74 @@ public class HexBoardEditor : EditorWindow
         _initBoard = true;
     }
 
+    private void BuildHexBoard(HexBoardModel model)
+    {
+        if(_hexTilePreferences == null)
+        {
+            LoadPreference();
+        }
+        int size = (int)(model.Size.X * model.Size.Y);
+        float w, h;
+        if (model.Layout == HexLayout.Flat)
+        {
+            w = _hexTilePreferences.SizeX * model.Scale.X;
+            h = _hexTilePreferences.SizeY * model.Scale.Z;
+        }
+        else
+        {
+            w = _hexTilePreferences.SizeY * model.Scale.X;
+            h = _hexTilePreferences.SizeX * model.Scale.Z;
+        }
+        int col = 0;
+        int row = 0;
+        float offset = 0;        
+        for(int i = 0; i < size; i++)
+        {
+            HexTileModel tile = model.HexTileModels[i];       
+            if( model.Layout == HexLayout.Flat)
+            {
+                BuildFlat(model, tile, w, h, i, ref col, ref row, ref offset);
+            }
+            else
+            {
+                BuildPointy(model, tile, w, h, i, ref col, ref row, ref offset);
+            }
+        }
+    }
+
+    private void BuildFlat(HexBoardModel model, HexTileModel tile, float width, float height, int index, ref int col, ref int row, ref float offset)
+    {
+        if (col >= model.Size.X)
+        {
+            offset += (height * 2);
+            col = 0;
+            ++row;
+        }
+
+        tile = model.HexTileModels[index];
+        tile.Position = (col & 1) == 1 ? new Point3(col * width, 0, offset) :
+            new Point3(col * width, 0, offset + height);
+        Point3 rotation = new Point3(0, 0, 0);        
+        tile.Rotation = rotation;
+        ++col;
+    }
+
+    private void BuildPointy(HexBoardModel model, HexTileModel tile, float width, float height, int index, ref int col, ref int row, ref float offset)
+    {
+        if (col >= model.Size.X)
+        {
+            offset += height;
+            col = 0;
+            ++row;
+        }
+
+        tile = model.HexTileModels[index];
+        tile.Position = (row & 1) == 1 ? new Point3((col * width * 2) + width, 0, offset) :
+            new Point3(col * width * 2, 0, offset);        
+        Point3 rotation = new Point3(0, 30, 0);
+        tile.Rotation = rotation;
+        ++col;
+    }
     private void ExitEdit()
     {
         _boardTool.Clean();

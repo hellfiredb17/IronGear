@@ -24,6 +24,11 @@ namespace HexWorld
             X = other.X;
             Y = other.Y;
         }
+
+        public override string ToString()
+        {
+            return "(" + X + "," + Y + ")";
+        }
     }
 
     //---- Vector 3
@@ -41,6 +46,11 @@ namespace HexWorld
         public Point3(Point3 other) : base(other.X, other.Y)
         {
             Z = other.Z;
+        }
+
+        public override string ToString()
+        {
+            return "(" + X + "," + Y + "," + Z + ")";
         }
     }
 
