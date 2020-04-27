@@ -38,8 +38,8 @@ public class HexTilePreferences : ScriptableObject
         HexTile tile = Instantiate<HexTile>(Prefab);
         tile.Model.MaterialName = material.ToString();
         tile.Model.TextureName = type.ToString();
-        tile.View.SetSharedMaterial(Materials[material]);
-        tile.View.SetSharedTexture(Textures[type]);
+        tile.View.SetMaterial(Materials[material]);
+        tile.View.SetTexture(Textures[type]);
         return tile;
     }
 

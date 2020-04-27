@@ -280,12 +280,12 @@ public class HexTileEditor : EditorWindow
     //----------------------
     public void UpdateMaterial(HexMaterial material)
     {
-        _hexTile.View.SetSharedMaterial(_hexTilePreferences.Materials[material]);
+        _hexTile.View.SetMaterial(_hexTilePreferences.Materials[material]);
     }
 
     public void UpdateTexture(HexType texture)
     {
-        _hexTile.View.SetSharedTexture(_hexTilePreferences.Textures[texture]);
+        _hexTile.View.SetTexture(_hexTilePreferences.Textures[texture]);
     }
 
     public void UpdateRotation()

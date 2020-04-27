@@ -14,6 +14,7 @@ namespace HexWorld
         //--------------
         [SerializeField] private MeshRenderer _meshRenderer;
         [SerializeField] private MeshCollider _meshCollider;
+        [SerializeField] private GameObject _selector;
 
         //---- Properties
         //---------------
@@ -45,9 +46,16 @@ namespace HexWorld
             _meshRenderer.material.SetTexture("_MainTex", texture);
         }
 
-        public void SetSharedTexture(Texture texture)
+        //---- Pointer interface
+        //----------------------
+        public void OnPointerEnter()
         {
-            _meshRenderer.sharedMaterial.SetTexture("_MainTex", texture);
+            _selector.SetActive(true);
+        }
+
+        public void OnPointerExit()
+        {
+            _selector.SetActive(false);
         }
     }
 } // end namespace

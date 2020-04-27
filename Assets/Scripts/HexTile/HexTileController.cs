@@ -4,7 +4,17 @@ using UnityEngine;
 
 namespace HexWorld
 {
-    public class HexTileController : MonoBehaviour
+    [System.Serializable]
+    public class HexTileController
     {
+        //---- Variables
+        //--------------
+        public HexTile HexTile;
+               
+        //---- Public
+        //-----------        
+
+        //---- Private
+        //------------        
     }
 }

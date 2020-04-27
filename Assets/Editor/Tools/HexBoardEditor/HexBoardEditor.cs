@@ -27,35 +27,50 @@ public class HexBoardEditor : EditorWindow
     private static string SCENE_PATH = "Assets/Scenes/BoardEditor/BoardEditor.unity";
     private static string DEFAULT_MATERIAL = "Solid";
     private static string DEFAULT_TEXTURE = "Water";
-    private static Vector2 MINSIZE = new Vector2(1920/2, 1080/2);
+    
+    private static float LARGE_WIDTH = 100;
+    private static float MEDIUM_WIDTH = 50;
+    private static float SMALL_WIDTH = 20;
+    private static float LINE = SMALL_WIDTH + 5.0f;
+
+    private static Vector2 MINSIZE = new Vector2(200, 1080/2);
     private static HexBoardEditor _window;
     private static BoardEditorTool _boardTool;
+    private static BoardEditorInputController _inputController;
     private static HexTilePreferences _hexTilePreferences;
 
-    private string _jsonPath;
-    private string _fileName;
     private State _state;
+    private HexBoardModel _model;    
+    private string _fileName;
+    private string _orginalFileName;
     private int _fileToLoadIndex;
 
+    private List<HexTileModel> _tileModels;
     private List<GUIContent> _hexBoardFiles;
-    private HexBoardModel _model;
-    private bool _initBoard;    
+    private List<GUIContent> _tileContent;
+
+    private int _tileSelectedIndex;
+
+    private bool _initBoard;
+    private bool _isEdit;
 
     //---- Unity
     //----------
     [MenuItem("IronGears/Design/Board Editor")]
     public static void Init()
     {
-        LoadSceneAndPlay();
-        LoadContent();
+        OpenScene();
+        PlayScene();
         _window = (HexBoardEditor)EditorWindow.GetWindow(typeof(HexBoardEditor));
-        _window.minSize = MINSIZE;
+        _window.minSize = MINSIZE;        
         _window.Show();
     }
 
     private void OnEnable()
     {        
-        LoadHexBoardFiles();        
+        LoadPreference();
+        LoadHexBoardFiles();
+        LoadHexTiles();
         _state = State.MainMenu;
     }
 
@@ -72,11 +87,14 @@ public class HexBoardEditor : EditorWindow
         }
     }
 
-    private static void LoadSceneAndPlay()
+    private static void OpenScene()
     {
         // Open scene
-        Scene scene = EditorSceneManager.OpenScene(SCENE_PATH);
+        Scene scene = EditorSceneManager.OpenScene(SCENE_PATH);       
+    }
 
+    private static void PlayScene()
+    {
         // Play the editor
         if (!EditorApplication.isPlaying)
         {
@@ -87,7 +105,7 @@ public class HexBoardEditor : EditorWindow
     //---- GUI
     //--------
     private void OnGUI()
-    {   
+    {
         switch(_state)
         {
             case State.MainMenu:
@@ -104,155 +122,115 @@ public class HexBoardEditor : EditorWindow
 
     private void MainMenu()
     {
-        EditorGUILayout.BeginVertical();
+        GUI.Label(new Rect(0, 0, 100, 20), "New Board");
+        if(GUI.Button(new Rect(110, 0, 100, 20), "Build"))
         {
-            GUILayout.Space(20);
-            // New board
-            EditorGUILayout.BeginHorizontal();
-            {
-                EditorGUILayout.LabelField("New Board", EditorStyles.boldLabel);
-                if(GUILayout.Button("Start"))
-                {
-                    _state = State.New;
-                    _model = new HexBoardModel();
-                    return;
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-
-            GUILayout.Space(20);
-            // Load board
-            EditorGUILayout.BeginHorizontal();
-            {
-                EditorGUILayout.LabelField("Load Board", EditorStyles.boldLabel);
-                int selected = EditorGUILayout.Popup(_fileToLoadIndex, _hexBoardFiles.ToArray());
-                if(selected != _fileToLoadIndex)
-                {
-                    _fileToLoadIndex = selected;
-                    if (_fileToLoadIndex != 0)
-                    {
-                        string fileName = _hexBoardFiles[_fileToLoadIndex].text;
-                        _model = LoadHexBoard(fileName);
-                    }
-                }
-
-                if(_fileToLoadIndex != 0)
-                {
-                    if (GUILayout.Button("Load"))
-                    {
-                        _state = State.Edit;
-                        return;
-                    }
-                }
-            }
-            EditorGUILayout.EndHorizontal();
+            _state = State.New;
+            _model = new HexBoardModel();
+            return;
         }
-        EditorGUILayout.EndVertical();
+
+        GUI.Label(new Rect(0, 25, 100, 20), "Load Board");
+        int selected = EditorGUI.Popup(new Rect(110, 25, 100, 20), _fileToLoadIndex, _hexBoardFiles.ToArray());
+        if (selected != _fileToLoadIndex)
+        {
+            _fileToLoadIndex = selected;
+            if (_fileToLoadIndex != 0)
+            {
+                string fileName = _hexBoardFiles[_fileToLoadIndex].text;
+                _model = LoadHexBoard(fileName);
+            }
+        }
+
+        if (_fileToLoadIndex != 0)
+        {
+            if (GUI.Button(new Rect(220, 25, 100, 20), "Load"))
+            {
+                _fileToLoadIndex = 0;
+                _state = State.Edit;
+                return;
+            }
+        }
     }
 
     private void NewBoard()
     {
-        EditorGUILayout.BeginVertical();
+        GUI.Label(new Rect(0, 0, 300, 20), "New Board", EditorStyles.boldLabel);
+
+        // Name
+        GUI.Label(new Rect(0, 25, 100, 20), "Board ID");
+        string name = EditorGUI.DelayedTextField(new Rect(100, 25, 100, 20), _model.ID);
+        if (name != _model.ID)
         {
-            EditorGUILayout.LabelField("Create Hex Board", EditorStyles.boldLabel);
-            GUILayout.Space(20);
+            _model.ID = name;
+        }
 
-            // Name
-            EditorGUILayout.LabelField("Name", EditorStyles.boldLabel);
-            EditorGUILayout.BeginHorizontal();
-            {                
-                string name = EditorGUILayout.DelayedTextField(_model.ID);
-                if(name != _model.ID)
-                {
-                    _model.ID = name;
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Space(20);
+        // Size
+        GUI.Label(new Rect(0, 50, 100, 20), "Size");
+        GUI.Label(new Rect(0, 75, 50, 20), "Width:");
+        float w = EditorGUI.DelayedFloatField(new Rect(55, 75, 50, 20), _model.Size.X);
+        if(w != _model.Size.X)
+        {
+            _model.Size.X = w;
+        }
+        GUI.Label(new Rect(110, 75, 50, 20), "Height:");
+        float h = EditorGUI.DelayedFloatField(new Rect(165, 75, 50, 20), _model.Size.Y);
+        if (h != _model.Size.Y)
+        {
+            _model.Size.Y = h;
+        }        
 
-            // Size
-            EditorGUILayout.LabelField("Board Size", EditorStyles.boldLabel);
-            EditorGUILayout.BeginHorizontal();
-            {                
-                EditorGUILayout.LabelField("Width:");
-                float w = EditorGUILayout.DelayedFloatField(_model.Size.X);
-                if(w != _model.Size.X)
-                {
-                    _model.Size.X = w;
-                }
-                EditorGUILayout.LabelField("Height:");
-                float h = EditorGUILayout.DelayedFloatField(_model.Size.Y);
-                if (h != _model.Size.Y)
-                {
-                    _model.Size.Y = h;
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Space(20);
+        // Scale
+        GUI.Label(new Rect(0, 100, 100, 20),"Hex Scale");            
+        GUI.Label(new Rect(0, 125, 20, 20), "X:");
+        float x = EditorGUI.DelayedFloatField(new Rect(21, 125, 50, 20),_model.Scale.X);
+        if (x != _model.Scale.X)
+        {
+            _model.Scale.X = x;
+        }
+        GUI.Label(new Rect(80, 125, 20, 20),"Y:");
+        float y = EditorGUI.DelayedFloatField(new Rect(101, 125, 50, 20),_model.Scale.Y);
+        if (y != _model.Scale.Y)
+        {
+            _model.Scale.Y = y;
+        }
+        GUI.Label(new Rect(160, 125, 20, 20),"Z:");
+        float z = EditorGUI.DelayedFloatField(new Rect(181, 125, 50, 20),_model.Scale.Z);
+        if (z != _model.Scale.Z)
+        {
+            _model.Scale.Z = z;
+        }
+        
+        // Layout
+        GUI.Label(new Rect(0, 150, 100, 20), "Hex Layout", EditorStyles.boldLabel);                       
+        System.Enum selected = EditorGUI.EnumPopup(new Rect(105, 150, 100, 20),_model.Layout);
+        if ((HexLayout)selected != _model.Layout)
+        {
+            _model.Layout = (HexLayout)selected;
+        }  
 
-            // Scale
-            EditorGUILayout.LabelField("Hex Scale", EditorStyles.boldLabel);
-            EditorGUILayout.BeginHorizontal();
-            {                
-                EditorGUILayout.LabelField("X:");
-                float x = EditorGUILayout.DelayedFloatField(_model.Scale.X);
-                if (x != _model.Scale.X)
-                {
-                    _model.Scale.X = x;
-                }
-                EditorGUILayout.LabelField("Y:");
-                float y = EditorGUILayout.DelayedFloatField(_model.Scale.Y);
-                if (y != _model.Scale.Y)
-                {
-                    _model.Scale.Y = y;
-                }
-                EditorGUILayout.LabelField("Z:");
-                float z = EditorGUILayout.DelayedFloatField(_model.Scale.Z);
-                if (z != _model.Scale.Z)
-                {
-                    _model.Scale.Z = z;
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Space(20);
-
-            // Layout
-            EditorGUILayout.LabelField("Hex Layout", EditorStyles.boldLabel);
-            EditorGUILayout.BeginHorizontal();
-            {                
-                System.Enum selected = EditorGUILayout.EnumPopup(_model.Layout);
-                if ((HexLayout)selected != _model.Layout)
-                {
-                    _model.Layout = (HexLayout)selected;
-                }                
-            }
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Space(20);
-
-            // Edit Button
-            if (ValidateModel())
+        // Edit Button
+        if (ValidateModel())
+        {
+            if(GUI.Button(new Rect(0, 175, 100, 20),"Edit Board"))
             {
-                if(GUILayout.Button("Edit Board"))
-                {
-                    _state = State.Edit;
-                }
-
-                if (GUILayout.Button("Return"))
-                {
-                    _model = null;
-                    _state = State.MainMenu;
-                }
+                _state = State.Edit;
             }
-            else
+
+            if (GUI.Button(new Rect(105, 175, 100, 20),"Return"))
             {
-                if (GUILayout.Button("Return"))
-                {
-                    _model = null;                    
-                    _state = State.MainMenu;                    
-                }
+                _model = null;
+                _state = State.MainMenu;
             }
         }
-        EditorGUILayout.EndVertical();
+        else
+        {
+            if (GUI.Button(new Rect(0, 175, 100, 20), "Return"))
+            {
+                _model = null;                    
+                _state = State.MainMenu;                    
+            }
+        }
     }
 
     private void EditBoard()
@@ -264,61 +242,185 @@ public class HexBoardEditor : EditorWindow
             return;
         }
 
-        GUILayout.BeginVertical();
+        Rect rect = new Rect(0, 0, 100, 20);
+        // Board data
+        GUI.Label(rect, "Edit Board", EditorStyles.boldLabel);
+
+        // ID
+        rect.y += LINE;
+        rect.width = SMALL_WIDTH;
+        GUI.Label(rect, "ID");
+        rect.x += SMALL_WIDTH;
+        rect.width = LARGE_WIDTH;
+        string strName = EditorGUI.DelayedTextField(rect, _model.ID);
+        if(strName != _model.ID)
         {
-            GUILayout.Space(10);
+            _model.ID = strName;
+            _isEdit = true;
+        }
 
-            // Board data
-            GUILayout.Label("---- Data ----", EditorStyles.boldLabel);
-            GUILayout.Label("Name: " + _model.ID);
-            GUILayout.Label("Size: " + _model.Size);
-            GUILayout.Label("Scale: " + _model.Scale);
-            GUILayout.Label("Layout: " + _model.Layout);
+        // Size
+        rect.y += LINE;
+        rect.x = 0;
+        GUI.Label(rect, "Size");
+        rect.y += LINE;
+        rect.width = MEDIUM_WIDTH;
+        GUI.Label(rect, "Col");
+        rect.x += MEDIUM_WIDTH;
+        rect.width = MEDIUM_WIDTH;
+        float x = EditorGUI.DelayedFloatField(rect, _model.Size.X);
+        if (x != _model.Size.X)
+        {
+            _model.Size.X = x;
+            _isEdit = true;
+        }
+        rect.x += MEDIUM_WIDTH;
+        rect.width = MEDIUM_WIDTH;
+        GUI.Label(rect, "Row");
+        rect.x += MEDIUM_WIDTH;
+        rect.width = MEDIUM_WIDTH;
+        float y = EditorGUI.DelayedFloatField(rect, _model.Size.Y);
+        if (y != _model.Size.Y)
+        {
+            _model.Size.Y = y;
+            _isEdit = true;
+        }
 
-            GUILayout.Space(10);
+        // Scale
+        rect.x = 0;
+        rect.y += LINE;
+        rect.width = LARGE_WIDTH;
+        GUI.Label(rect, "Scale");
+        rect.y += LINE;
+        rect.width = SMALL_WIDTH;
+        GUI.Label(rect, "X");
+        rect.x += SMALL_WIDTH;
+        rect.width = MEDIUM_WIDTH;
+        x = EditorGUI.DelayedFloatField(rect, _model.Scale.X);
+        if(x != _model.Scale.X)
+        {
+            _model.Scale.X = x;
+            _isEdit = true;
+        }
+        rect.x += MEDIUM_WIDTH;
+        rect.width = SMALL_WIDTH;
+        GUI.Label(rect, "Y");
+        rect.x += SMALL_WIDTH;
+        rect.width = MEDIUM_WIDTH;
+        y = EditorGUI.DelayedFloatField(rect, _model.Scale.Y);
+        if (y != _model.Scale.Y)
+        {
+            _model.Scale.Y = y;
+            _isEdit = true;
+        }
+        rect.x += MEDIUM_WIDTH;
+        rect.width = SMALL_WIDTH;
+        GUI.Label(rect, "Z");
+        rect.x += SMALL_WIDTH;
+        rect.width = MEDIUM_WIDTH;
+        float z = EditorGUI.DelayedFloatField(rect, _model.Scale.Z);
+        if (z != _model.Scale.Z)
+        {
+            _model.Scale.Z = z;
+            _isEdit = true;
+        }
 
-            // Edit
-            GUILayout.Label("---- Edit ----", EditorStyles.boldLabel);
+        // Layout        
+        rect.x = 0;
+        rect.y += LINE;
+        rect.width = MEDIUM_WIDTH;
+        GUI.Label(rect, "Layout");
+        rect.x += MEDIUM_WIDTH;
+        rect.width = LARGE_WIDTH;
+        HexLayout value = (HexLayout) EditorGUI.EnumPopup(rect, _model.Layout);
+        if(value != _model.Layout)
+        {
+            _model.Layout = value;
+            _isEdit = true;
+        }
 
-            GUILayout.Space(10);
-
-            // Save
-            if (ValidateModel())
+        // Rebuild with new data        
+        if(_isEdit)
+        {
+            rect.y += LINE;
+            rect.x = 0;
+            if (GUI.Button(rect, "Rebuild"))
             {
-                if (GUILayout.Button("Save"))
-                {
-                    string file = _model.ID + ".json";
-                    string json = JsonUtility.ToJson(_model);
-
-                    File.WriteAllText(_jsonPath + file, json);
-                    AssetDatabase.Refresh();
-                    Debug.LogWarning("Json saved: " + _jsonPath + file);
-                    LoadHexBoardFiles();
-                }
-
-                if (GUILayout.Button("Return"))
-                {
-                    ExitEdit();
-                    _state = State.MainMenu;
-                }
-            }
-            else
-            {
-                if (GUILayout.Button("Return"))
-                {
-                    ExitEdit();
-                    _state = State.MainMenu;
-                }
+                _boardTool.Clean();
+                _model.HexTileModels.Clear();
+                _initBoard = false;
+                _isEdit = false;
+                return;
             }
         }
-        GUILayout.EndVertical();
+
+        rect.y += LINE + LINE;
+        rect.x = 0;
+        GUI.Label(rect, "Edit Tile", EditorStyles.boldLabel);
+        rect.y += LINE;
+        rect.width = MEDIUM_WIDTH;
+        GUI.Label(rect, "Tile");
+        rect.x += MEDIUM_WIDTH;
+        rect.width = LARGE_WIDTH;
+        int selection = EditorGUI.Popup(rect, _tileSelectedIndex, _tileContent.ToArray());
+        if(selection != _tileSelectedIndex)
+        {
+            _tileSelectedIndex = selection;
+            _boardTool.InputController.UpdateModelData(_tileModels[_tileSelectedIndex]);
+        }      
+        
+        // Save
+        if (ValidateModel())
+        {
+            rect.y += LINE;
+            rect.x = 0;
+            rect.width = LARGE_WIDTH;
+            if (GUI.Button(rect,"Save"))
+            {
+                string jsonPath = Application.dataPath + "/Json/HexBoards/";
+                // Remove old name first
+                if (_model.ID != _orginalFileName)
+                {
+                    string oldFile = jsonPath + _orginalFileName + ".json";
+                    if (File.Exists(oldFile))
+                    {
+                        File.Delete(oldFile);
+                        Debug.LogWarning("File " + oldFile + " removed");
+                    }
+                }
+
+                // Save data
+                string file = _model.ID + ".json";
+                string json = JsonUtility.ToJson(_model);
+
+                File.WriteAllText(jsonPath + file, json);
+                AssetDatabase.Refresh();
+                Debug.LogWarning("Json saved: " + jsonPath + file);
+                LoadHexBoardFiles();
+            }
+
+            rect.x += LARGE_WIDTH;
+            if (GUI.Button(rect,"Return"))
+            {
+                ExitEdit();
+                _state = State.MainMenu;
+            }
+        }
+        else
+        {
+            if (GUI.Button(rect,"Return"))
+            {
+                ExitEdit();
+                _state = State.MainMenu;
+            }
+        }
     }
 
     //---- Edit Functions
     //-------------------
     private void EnterEdit()
     {
-        if(_boardTool == null)
+        if (_boardTool == null)
         {
             // Get tool object from scene
             Scene scene = SceneManager.GetActiveScene();
@@ -328,7 +430,7 @@ public class HexBoardEditor : EditorWindow
                 BoardEditorTool tool = roots[i].GetComponent<BoardEditorTool>();
                 if (tool != null)
                 {
-                    _boardTool = tool;
+                    _boardTool = tool;                    
                     break;
                 }
             }
@@ -367,8 +469,10 @@ public class HexBoardEditor : EditorWindow
         // Send model data to scene to build board
         _boardTool.BuildHexBoardFromModel(_model);
 
+        // set oringal file name
+        _orginalFileName = _model.ID;
         _initBoard = true;
-    }
+    }    
 
     private void BuildHexBoard(HexBoardModel model)
     {
@@ -438,11 +542,14 @@ public class HexBoardEditor : EditorWindow
         tile.Rotation = rotation;
         ++col;
     }
+
     private void ExitEdit()
     {
         _boardTool.Clean();
         _initBoard = false;
+        _isEdit = false;
         _model = null;
+        _orginalFileName = string.Empty;
     }
 
     //---- Validate
@@ -468,11 +575,6 @@ public class HexBoardEditor : EditorWindow
 
     //---- Load Data
     //--------------
-    private static void LoadContent()
-    {
-        LoadPreference();        
-    }
-
     private static void LoadPreference()
     {
         string path = "Assets/Preferences/HexTilePreferences.asset";
@@ -483,14 +585,14 @@ public class HexBoardEditor : EditorWindow
 
     private void LoadHexBoardFiles()
     {
-        _jsonPath = Application.dataPath + "/Json/HexBoards/";
+        string jsonPath = Application.dataPath + "/Json/HexBoards/";
         _hexBoardFiles = new List<GUIContent>();
         _hexBoardFiles.Add(new GUIContent("None"));
 
-        string[] files = Directory.GetFiles(_jsonPath);
+        string[] files = Directory.GetFiles(jsonPath);
         for(int i = 0; i < files.Length; i++)
         {
-            string shortFilename = files[i].Replace(_jsonPath, "");
+            string shortFilename = files[i].Replace(jsonPath, "");
             if(shortFilename.Contains(".meta"))
             {
                 continue;
@@ -500,15 +602,40 @@ public class HexBoardEditor : EditorWindow
         }
     }
 
+    private void LoadHexTiles()
+    {
+        // Load tiles
+        _tileModels = new List<HexTileModel>();
+        _tileContent = new List<GUIContent>();
+
+        string jsonPath = Application.dataPath + "/Json/HexTiles/";
+        string[] files = Directory.GetFiles(jsonPath);
+        for (int i = 0; i < files.Length; i++)
+        {            
+            if (files[i].Contains(".meta"))
+            {
+                continue;
+            }
+
+            string json = File.ReadAllText(files[i]);
+            _tileModels.Add(JsonUtility.FromJson<HexTileModel>(json));
+
+            string shortFilename = files[i].Replace(jsonPath, "");
+            shortFilename = shortFilename.Replace(".json", "");
+            _tileContent.Add(new GUIContent(shortFilename));
+        }
+    }
+
     private HexBoardModel LoadHexBoard(string jsonFileName)
     {
-        if (!File.Exists(_jsonPath + jsonFileName + ".json"))
+        string jsonPath = Application.dataPath + "/Json/HexBoards/";
+        if (!File.Exists(jsonPath + jsonFileName + ".json"))
         {
-            Debug.LogError("Unable to find json file: " + _jsonPath + jsonFileName + ".json");
+            Debug.LogError("Unable to find json file: " + jsonPath + jsonFileName + ".json");
             return null;
         }
 
-        string json = File.ReadAllText(_jsonPath + jsonFileName + ".json");
+        string json = File.ReadAllText(jsonPath + jsonFileName + ".json");
         return JsonUtility.FromJson<HexBoardModel>(json);
     }
 }

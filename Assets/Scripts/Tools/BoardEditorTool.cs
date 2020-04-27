@@ -11,9 +11,11 @@ public class BoardEditorTool : MonoBehaviour
     public Light DirectionalLight;
     public GameObject Board;
     public HexTilePreferences Preferences;
+    public BoardEditorInputController InputController;
 
     private HexBoardModel _model;
     private List<HexTile> _tiles;
+    private HexTileModel _selectedHexData;
 
     //---- Unity
     //----------
@@ -37,10 +39,11 @@ public class BoardEditorTool : MonoBehaviour
             HexTileModel tile = _model.HexTileModels[i];
             Texture texture = Preferences.Textures[Preferences.GetTypeEnum(tile.TextureName)];
             Material material = Preferences.Materials[HexMaterial.Solid];
-            HexTile hex = Instantiate<HexTile>(Preferences.Prefab, Board.transform);                      
+            HexTile hex = Instantiate<HexTile>(Preferences.Prefab, Board.transform);
+            hex.name = "Tile_" + i;
             hex.Model = tile;
-            hex.View.SetSharedTexture(texture);
-            hex.View.SetSharedMaterial(material);
+            hex.View.SetMaterial(material);
+            hex.View.SetTexture(texture);            
             hex.transform.localPosition = tile.Position.Convert();
             hex.View.transform.localRotation = Quaternion.Euler(tile.Rotation.Convert());
             hex.transform.localScale = tile.Scale.Convert();
@@ -48,16 +51,47 @@ public class BoardEditorTool : MonoBehaviour
         }       
     }
 
+    public void SetHexTileModel(HexTileModel data)
+    {
+        _selectedHexData = data;
+    }
+
     public void Clean()
     {
         for(int i = 0; i < _tiles.Count; i++)
         {
-            Destroy(_tiles[i].gameObject);
+            DestroyImmediate(_tiles[i].gameObject);
         }
         _tiles.Clear();
     }
 
+    public void UpdateTile(HexTile tile, HexTileModel model)
+    {
+        if (tile == null || model == null)
+        {
+            return;
+        }
+
+        // Find model index
+        for(int i = 0; i < _tiles.Count; i++)
+        {
+            if(tile == _tiles[i])
+            {                
+                _model.HexTileModels[i].MaterialName = model.MaterialName;
+                _model.HexTileModels[i].TextureName = model.TextureName;
+                _model.HexTileModels[i].MovementCost = model.MovementCost;
+                _model.HexTileModels[i].DefenseRating = model.DefenseRating;
+            }
+        }
+
+        Texture texture = Preferences.Textures[Preferences.GetTypeEnum(model.TextureName)];
+        Material material = Preferences.Materials[HexMaterial.Solid];        
+        
+        tile.Model = model;
+        tile.View.SetTexture(texture);                
+    }
+
     //---- Private
     //------------
-  
+
 }

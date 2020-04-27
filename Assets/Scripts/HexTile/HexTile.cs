@@ -8,7 +8,14 @@ public class HexTile : MonoBehaviour
     public HexTileView View;
     public HexTileModel Model;
     public HexTileController Controller;
-    
+
+    //---- Unity
+    //----------
+    private void Awake()
+    {
+        Controller.HexTile = this;
+    }
+
     //---- Functions
     //--------------
     public void SetModelData()
