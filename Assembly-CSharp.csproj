@@ -69,6 +69,7 @@
     <Compile Include="Assets\Scripts\HexTile\HexTileController.cs" />
     <Compile Include="Assets\Scripts\HexTile\HexTileModel.cs" />
     <Compile Include="Assets\Scripts\HexTile\HexTileView.cs" />
+    <Compile Include="Assets\Scripts\Preferences\BoardEditorPreferences.cs" />
     <Compile Include="Assets\Scripts\Preferences\HexTilePreferences.cs" />
     <Compile Include="Assets\Scripts\Shared\Enums\HexEnums.cs" />
     <Compile Include="Assets\Scripts\Shared\Utils\HexMath.cs" />
