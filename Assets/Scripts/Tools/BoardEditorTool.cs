@@ -2,16 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 using HexWorld;
+using UnityEditor;
+using System;
 
 public class BoardEditorTool : MonoBehaviour
 {
     //---- Variables
     //--------------
-    public Camera MainCamera;
+    public static bool EditorWindowOpen;
+    public static Action OnEditorStopPlaying;
+    
     public Light DirectionalLight;
     public GameObject Board;
     public HexTilePreferences Preferences;
-    public BoardEditorInputController InputController;
+    public CameraEditorBehaviour cameraBehaviour;
+    public InputController InputController;
 
     private HexBoardModel _model;
     private List<HexTile> _tiles;
@@ -19,9 +24,28 @@ public class BoardEditorTool : MonoBehaviour
 
     //---- Unity
     //----------
+    private static void OpenEditorWindow()
+    {
+        EditorApplication.ExecuteMenuItem("IronGears/Design/Board Editor");
+    }
+
+    private void Awake()
+    {
+        if(!EditorWindowOpen)
+        {
+            OpenEditorWindow();
+        }
+    }
+
     private void Start()
     {
-        Debug.Log("Tool started");
+        Debug.Log("Tool started -- Window open: " + EditorWindowOpen);
+    }
+
+    private void OnDestroy()
+    {        
+        OnEditorStopPlaying?.Invoke();
+        Debug.Log("Tool ended -- Window open: " + EditorWindowOpen);
     }
 
     //---- Public
@@ -90,8 +114,4 @@ public class BoardEditorTool : MonoBehaviour
         tile.Model = model;
         tile.View.SetTexture(texture);                
     }
-
-    //---- Private
-    //------------
-
 }

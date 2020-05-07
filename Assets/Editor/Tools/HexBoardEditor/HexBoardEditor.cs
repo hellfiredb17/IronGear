@@ -35,8 +35,7 @@ public class HexBoardEditor : EditorWindow
 
     private static Vector2 MINSIZE = new Vector2(200, 1080/2);
     private static HexBoardEditor _window;
-    private static BoardEditorTool _boardTool;
-    private static BoardEditorInputController _inputController;
+    private static BoardEditorTool _boardTool;    
     private static HexTilePreferences _hexTilePreferences;
 
     private State _state;
@@ -56,6 +55,8 @@ public class HexBoardEditor : EditorWindow
 
     //---- Unity
     //----------
+    public static bool IsOpen => _window == null;
+
     [MenuItem("IronGears/Design/Board Editor")]
     public static void Init()
     {
@@ -63,11 +64,13 @@ public class HexBoardEditor : EditorWindow
         PlayScene();
         _window = (HexBoardEditor)EditorWindow.GetWindow(typeof(HexBoardEditor));
         _window.minSize = MINSIZE;        
-        _window.Show();
+        _window.Show();        
     }
 
     private void OnEnable()
-    {        
+    {
+        BoardEditorTool.EditorWindowOpen = true;
+        BoardEditorTool.OnEditorStopPlaying = OnClose;
         LoadPreference();
         LoadHexBoardFiles();
         LoadHexTiles();
@@ -75,8 +78,9 @@ public class HexBoardEditor : EditorWindow
     }
 
     private void OnDisable()
-    {        
-        if(_boardTool)
+    {
+        BoardEditorTool.EditorWindowOpen = false;
+        if (_boardTool)
         {
             _boardTool.Clean();
         }
@@ -87,10 +91,18 @@ public class HexBoardEditor : EditorWindow
         }
     }
 
+    private void OnClose()
+    {
+        _window.Close();
+    }
+
     private static void OpenScene()
     {
         // Open scene
-        Scene scene = EditorSceneManager.OpenScene(SCENE_PATH);       
+        if (!EditorApplication.isPlaying)
+        {
+            Scene scene = EditorSceneManager.OpenScene(SCENE_PATH);
+        }
     }
 
     private static void PlayScene()
@@ -366,7 +378,8 @@ public class HexBoardEditor : EditorWindow
         if(selection != _tileSelectedIndex)
         {
             _tileSelectedIndex = selection;
-            _boardTool.InputController.UpdateModelData(_tileModels[_tileSelectedIndex]);
+            // TODO - set the current selected tile model
+            //_boardTool.InputController.UpdateModelData(_tileModels[_tileSelectedIndex]);
         }      
         
         // Save
