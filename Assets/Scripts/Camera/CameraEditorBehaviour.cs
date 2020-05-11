@@ -136,14 +136,12 @@ public class CameraEditorBehaviour : MonoBehaviour
     }
 
     private void OnMouseBtn0Down(bool isDown)
-    {
-        Debug.Log("Mouse btn0: " + isDown);
+    {        
         _mouseBtn0Down = isDown;
     }
 
     private void OnMouseBtn1Down(bool isDown)
-    {
-        Debug.Log("Mouse btn1: " + isDown);
+    {        
         _mouseBtn1Down = isDown;
         if(_mouseBtn1Down)
         {

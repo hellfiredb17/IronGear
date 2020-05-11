@@ -27,11 +27,13 @@ public class HexTileEditor : EditorWindow
     private GUIContent[] _jsonContent;
     private int _jsonSelection;
 
-    private HexWorld.HexMaterial _materialSelection;
-    private HexWorld.HexType _textureSelection;
+    private GUIContent[] _textureContent;
+    private int _textureIndex;
+
     private int _movementCost;
     private int _defenseRating;
     private HexWorld.TerrainType _terrainType;
+    private Vector3 _scale = new Vector3(1, 1, 1);
     private Vector3 _rotation = new Vector3(315f, 315f, 0f);
 
     private bool _canSave = false;
@@ -64,12 +66,17 @@ public class HexTileEditor : EditorWindow
         _renderUtils.camera.transform.position = new Vector3(0, 0, -10);
         _renderUtils.camera.transform.LookAt(_hexTile.transform, Vector3.up);
 
+        // Get texture contents
+        GetTexturesContent();
+        _textureIndex = 0;
+
         // Updates
         UpdateRotation();
+        UpdateScale();
         UpdateJsonOptions();
-        UpdateMaterial(_materialSelection);
-        UpdateTexture(_textureSelection);
-        _filename = "Hex" + _materialSelection.ToString() + _textureSelection.ToString();
+        _hexTile.View.SetMaterial(_hexTilePreferences.Materials["default"]);
+        UpdateTexture(_textureContent[_textureIndex].text);
+        _filename = "Hex_Temp";
     }
 
     private void OnDisable()
@@ -85,13 +92,13 @@ public class HexTileEditor : EditorWindow
         {
             GUILayout.Label("Hex Tile Editor", EditorStyles.boldLabel);
             GUILayout.Space(10);
-            PreviewName();
-            GUILayout.Space(5);
-            PreviewMateral();
+            PreviewName();            
             GUILayout.Space(5);
             PreviewTexture();
             GUILayout.Space(5);
             PreviewDetails();
+            GUILayout.Space(5);
+            PreviewScale();
             GUILayout.Space(5);
             PreviewRotations();
             GUILayout.Space(5);
@@ -108,45 +115,49 @@ public class HexTileEditor : EditorWindow
         {
             GUILayout.Label("File Name");
             int selection = EditorGUILayout.Popup(_jsonSelection, _jsonContent);
-            if(selection != _jsonSelection)
+            if (selection != _jsonSelection)
             {
                 _jsonSelection = selection;
                 if (_jsonSelection != 0)
                 {
                     HexTileModel data = LoadHexTileModel(_jsonContent[_jsonSelection].text);
-                    if(data != null)
+                    if (data != null)
                     {
-                        _materialSelection = _hexTilePreferences.GetMaterialEnum(data.MaterialName);
-                        _textureSelection = _hexTilePreferences.GetTypeEnum(data.TextureName);
+                        _textureIndex = IndexOfTexture(data.TextureName);
+                        UpdateTexture(_textureContent[_textureIndex].text);
                         _movementCost = data.MovementCost;
                         _defenseRating = data.DefenseRating;
                         _terrainType = data.TerrainType;
-                        UpdateMaterial(_materialSelection);
-                        UpdateTexture(_textureSelection);
-                    }                    
+                        _scale = data.Scale.Convert();
+                        UpdateScale();
+                    }
                 }
-                _filename = "Hex" + _materialSelection.ToString() + _textureSelection.ToString();
+                _filename = "Hex_" + _textureContent[_textureIndex].text + "_" + _scale.y;
             }
 
             EditorGUILayout.LabelField(_filename, EditorStyles.textArea);                    
         });
     }
 
-    private void PreviewMateral()
+    private int IndexOfTexture(string textureName)
     {
-        GUIHorizontalGroup(() =>
+        int index = -1;
+        for(int i = 0; i < _textureContent.Length; i++)
         {
-            GUILayout.Label("Material");
-            System.Enum selection = EditorGUILayout.EnumPopup(_materialSelection);
-            if ((HexMaterial)selection != _materialSelection)
+            if(_textureContent[i].text == textureName)
             {
-                _canSave = true;
-                _materialSelection = (HexMaterial)selection;
-                UpdateMaterial(_materialSelection);
-                UpdateTexture(_textureSelection);
-                _filename = "Hex" + _materialSelection.ToString() + _textureSelection.ToString();
+                index = i;
+                break;
             }
-        });
+        }
+
+        // Error check
+        if(index == -1)
+        {
+            Debug.LogError("Unable to get texture index from " + textureName);
+            index = 0;
+        }
+        return index;
     }
 
     private void PreviewTexture()
@@ -154,13 +165,13 @@ public class HexTileEditor : EditorWindow
         GUIHorizontalGroup(() =>
         {
             GUILayout.Label("Texture");
-            System.Enum selection = EditorGUILayout.EnumPopup(_textureSelection);
-            if ((HexType)selection != _textureSelection)
+            int selection = EditorGUILayout.Popup(_textureIndex, _textureContent);
+            if (selection != _textureIndex)
             {
                 _canSave = true;
-                _textureSelection = (HexType)selection;
-                UpdateTexture(_textureSelection);
-                _filename = "Hex" + _materialSelection.ToString() + _textureSelection.ToString();
+                _textureIndex = selection;
+                UpdateTexture(_textureContent[_textureIndex].text);
+                _filename = "Hex_" + _textureContent[_textureIndex].text + "_" + _scale.y;
             }
         });
     }
@@ -179,6 +190,7 @@ public class HexTileEditor : EditorWindow
                 _hexTile.Model.MovementCost = _movementCost;
             }
         });
+
         GUIHorizontalGroup(() =>
         {
             GUILayout.Label("DefenseRating:");
@@ -190,6 +202,7 @@ public class HexTileEditor : EditorWindow
                 _hexTile.Model.DefenseRating = _defenseRating;
             }
         });
+
         GUIHorizontalGroup(() =>
         {
             GUILayout.Label("TerrainType:");
@@ -199,6 +212,47 @@ public class HexTileEditor : EditorWindow
                 _canSave = true;
                 _terrainType = (TerrainType)selection;
                 _hexTile.Model.TerrainType = _terrainType;
+            }
+        });
+    }
+
+    private void PreviewScale()
+    {
+        GUILayout.Label("Preview Scale");
+        GUIHorizontalGroup(() =>
+        {
+            GUILayout.Label("X:");
+            float x = EditorGUILayout.DelayedFloatField(_scale.x);
+            if (x != _scale.x)
+            {
+                _canSave = true;
+                _scale.x = x;
+                UpdateScale();
+            }
+        });
+
+        GUIHorizontalGroup(() =>
+        {
+            GUILayout.Label("Y:");
+            float y = EditorGUILayout.DelayedFloatField(_scale.y);
+            if (y != _scale.y)
+            {
+                _canSave = true;
+                _scale.y = y;
+                UpdateScale();
+                _filename = "Hex_" + _textureContent[_textureIndex].text + "_" + _scale.y;
+            }
+        });
+
+        GUIHorizontalGroup(() =>
+        {
+            GUILayout.Label("Z:");
+            float z = EditorGUILayout.DelayedFloatField(_scale.z);
+            if (z != _scale.z)
+            {
+                _canSave = true;
+                _scale.z = z;
+                UpdateScale();
             }
         });
     }
@@ -248,8 +302,8 @@ public class HexTileEditor : EditorWindow
             if (GUILayout.Button("Save Model"))
             {
                 HexWorld.HexTileModel model = _hexTile.Model;
-                model.MaterialName = _materialSelection.ToString();
-                model.TextureName = _textureSelection.ToString();
+                model.MaterialName = "default";
+                model.TextureName = _textureContent[_textureIndex].text;
                 string file = _filename + ".json";
                 string json = JsonUtility.ToJson(model);
 
@@ -278,19 +332,20 @@ public class HexTileEditor : EditorWindow
 
     //---- Update Gameobject
     //----------------------
-    public void UpdateMaterial(HexMaterial material)
+    public void UpdateTexture(string texture)
     {
-        _hexTile.View.SetMaterial(_hexTilePreferences.Materials[material]);
-    }
-
-    public void UpdateTexture(HexType texture)
-    {
-        _hexTile.View.SetTexture(_hexTilePreferences.Textures[texture]);
+        _hexTile.View.Renderer.sharedMaterial.SetTexture("_MainTex", _hexTilePreferences.Textures[texture]);
     }
 
     public void UpdateRotation()
     {
         _hexTile.transform.rotation = Quaternion.Euler(_rotation);
+    }
+
+    public void UpdateScale()
+    {
+        _hexTile.transform.localScale = _scale;
+        _hexTile.Model.Scale = _scale.Convert();
     }
 
     public void UpdateJsonOptions()
@@ -342,6 +397,17 @@ public class HexTileEditor : EditorWindow
 
         string json = File.ReadAllText(_jsonPath + jsonFileName + ".json");
         return JsonUtility.FromJson<HexTileModel>(json);        
+    }
+
+    private void GetTexturesContent()
+    {
+        _textureContent = new GUIContent[_hexTilePreferences.Textures.Count];
+        int i = 0;
+        foreach(string key in _hexTilePreferences.Textures.Keys)
+        {
+            _textureContent[i] = new GUIContent(key);
+            i++;
+        }
     }
 
     //---- Layout Helpers

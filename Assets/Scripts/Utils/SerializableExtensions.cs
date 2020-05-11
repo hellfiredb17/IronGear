@@ -8,7 +8,7 @@ namespace HexWorld
     public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
     {
         public List<TKey> _keys;
-        public List<TValue> _values;        
+        public List<TValue> _values;
 
         public void OnBeforeSerialize()
         {                   
@@ -37,10 +37,10 @@ namespace HexWorld
     }
     
     [Serializable]
-    public class TextureDictionary : SerializableDictionary<HexType, Texture>
-    { }    
+    public class StringTextureDictionary : SerializableDictionary<string, Texture>
+    { }
 
     [Serializable]
-    public class MaterialDictionary : SerializableDictionary<HexMaterial, Material>
+    public class StringMaterialDictionary : SerializableDictionary<string, Material>
     { }
 }// end namespace

@@ -10,17 +10,20 @@ public class BoardEditorTool : MonoBehaviour
     //---- Variables
     //--------------
     public static bool EditorWindowOpen;
-    public static Action OnEditorStopPlaying;
+    public static Action OnEditorStopPlaying;    
     
     public Light DirectionalLight;
     public GameObject Board;
     public HexTilePreferences Preferences;
-    public CameraEditorBehaviour cameraBehaviour;
+    public CameraEditorBehaviour CameraBehaviour;
     public InputController InputController;
 
-    private HexBoardModel _model;
+    private HexBoardModel _boardModel;
     private List<HexTile> _tiles;
+
     private HexTileModel _selectedHexData;
+    private HexTile _currentHoverHexTile;
+    private HexTile _lastHexTileClick;
 
     //---- Unity
     //----------
@@ -38,14 +41,16 @@ public class BoardEditorTool : MonoBehaviour
     }
 
     private void Start()
-    {
-        Debug.Log("Tool started -- Window open: " + EditorWindowOpen);
+    {        
+        CameraBehaviour.OnMouseHoverHexTile += OnHexTileHoverEnter;
+        CameraBehaviour.OnMouseClickHexTile += OnHexTileClick;
     }
 
     private void OnDestroy()
     {        
-        OnEditorStopPlaying?.Invoke();
-        Debug.Log("Tool ended -- Window open: " + EditorWindowOpen);
+        OnEditorStopPlaying?.Invoke();        
+        CameraBehaviour.OnMouseHoverHexTile -= OnHexTileHoverEnter;
+        CameraBehaviour.OnMouseClickHexTile -= OnHexTileClick;
     }
 
     //---- Public
@@ -56,29 +61,25 @@ public class BoardEditorTool : MonoBehaviour
         {
             Clean();
         }
-        _tiles = new List<HexTile>((int)(model.Size.X * model.Size.Y));
-        _model = model;
-        for(int i = 0; i < _model.HexTileModels.Count; i++)
+
+        _boardModel = model;
+        _tiles = new List<HexTile>(model.HexTileModels.Count);        
+        for(int i = 0; i < _boardModel.HexTileModels.Count; i++)
         {
-            HexTileModel tile = _model.HexTileModels[i];
-            Texture texture = Preferences.Textures[Preferences.GetTypeEnum(tile.TextureName)];
-            Material material = Preferences.Materials[HexMaterial.Solid];
+            HexTileModel modelData = _boardModel.HexTileModels[i];
+            Texture texture = Preferences.Textures[modelData.TextureName];
+            Material material = Preferences.Materials[modelData.MaterialName];
             HexTile hex = Instantiate<HexTile>(Preferences.Prefab, Board.transform);
             hex.name = "Tile_" + i;
-            hex.Model = tile;
+            hex.Model = modelData;
             hex.View.SetMaterial(material);
             hex.View.SetTexture(texture);            
-            hex.transform.localPosition = tile.Position.Convert();
-            hex.View.transform.localRotation = Quaternion.Euler(tile.Rotation.Convert());
-            hex.transform.localScale = tile.Scale.Convert();
+            hex.transform.localPosition = modelData.Position.Convert();
+            hex.transform.localRotation = Quaternion.Euler(modelData.Rotation.Convert());
+            hex.transform.localScale = modelData.Scale.Convert();
             _tiles.Add(hex);
         }       
-    }
-
-    public void SetHexTileModel(HexTileModel data)
-    {
-        _selectedHexData = data;
-    }
+    }    
 
     public void Clean()
     {
@@ -89,29 +90,69 @@ public class BoardEditorTool : MonoBehaviour
         _tiles.Clear();
     }
 
-    public void UpdateTile(HexTile tile, HexTileModel model)
+    public void OnModelSelectionChange(HexTileModel hexModel)
     {
-        if (tile == null || model == null)
+        _selectedHexData = hexModel;
+    }    
+
+    //---- Private
+    //------------
+    private void OnHexTileHoverEnter(HexTile hexTile)
+    {
+        if(_currentHoverHexTile && hexTile != _currentHoverHexTile)
         {
-            return;
+            _currentHoverHexTile.View.OnPointerExit();
         }
 
-        // Find model index
-        for(int i = 0; i < _tiles.Count; i++)
+        _currentHoverHexTile = hexTile;
+        if (hexTile == null)
+        {            
+            return;
+        }       
+        
+        _currentHoverHexTile.View.OnPointerEnter();
+    }
+
+    private void OnHexTileClick(HexTile hexTile)
+    {
+        if(hexTile == null || _selectedHexData == null || 
+            _lastHexTileClick == hexTile)
         {
-            if(tile == _tiles[i])
-            {                
-                _model.HexTileModels[i].MaterialName = model.MaterialName;
-                _model.HexTileModels[i].TextureName = model.TextureName;
-                _model.HexTileModels[i].MovementCost = model.MovementCost;
-                _model.HexTileModels[i].DefenseRating = model.DefenseRating;
+            _lastHexTileClick = null;
+            return;
+        }
+        _lastHexTileClick = hexTile;
+        UpdateHexTileData(hexTile, _selectedHexData);
+    }
+
+    private void UpdateHexTileData(HexTile tile, HexTileModel model)
+    {
+        // Find model index
+        HexTileModel hexModel = null;
+        for (int i = 0; i < _tiles.Count; i++)
+        {
+            if (tile == _tiles[i])
+            {
+                hexModel = _boardModel.HexTileModels[i];
+                break;
             }
         }
 
-        Texture texture = Preferences.Textures[Preferences.GetTypeEnum(model.TextureName)];
-        Material material = Preferences.Materials[HexMaterial.Solid];        
-        
-        tile.Model = model;
-        tile.View.SetTexture(texture);                
+        if(hexModel == null)
+        {
+            Debug.LogError("Unable to update hext tile data, could not be found: " + tile.name);
+            return;
+        }
+        hexModel.MaterialName = model.MaterialName;
+        hexModel.TextureName = model.TextureName;
+        hexModel.MovementCost = model.MovementCost;
+        hexModel.DefenseRating = model.DefenseRating;
+        hexModel.Scale = model.Scale;
+
+        Texture texture = Preferences.Textures[model.TextureName];
+
+        //tile.Model = model;
+        tile.View.SetTexture(texture);
+        tile.transform.localScale = model.Scale.Convert();
     }
 }

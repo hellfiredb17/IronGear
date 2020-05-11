@@ -25,8 +25,8 @@ public class HexBoardEditor : EditorWindow
     //---- Variables
     //--------------
     private static string SCENE_PATH = "Assets/Scenes/BoardEditor/BoardEditor.unity";
-    private static string DEFAULT_MATERIAL = "Solid";
-    private static string DEFAULT_TEXTURE = "Water";
+    private static string DEFAULT_MATERIAL = "default";
+    private static string DEFAULT_TEXTURE = "temp";
     
     private static float LARGE_WIDTH = 100;
     private static float MEDIUM_WIDTH = 50;
@@ -39,7 +39,7 @@ public class HexBoardEditor : EditorWindow
     private static HexTilePreferences _hexTilePreferences;
 
     private State _state;
-    private HexBoardModel _model;    
+    private HexBoardModel _boardModel;    
     private string _fileName;
     private string _orginalFileName;
     private int _fileToLoadIndex;
@@ -93,7 +93,10 @@ public class HexBoardEditor : EditorWindow
 
     private void OnClose()
     {
-        _window.Close();
+        if (_window)
+        {
+            _window.Close();
+        }
     }
 
     private static void OpenScene()
@@ -138,7 +141,7 @@ public class HexBoardEditor : EditorWindow
         if(GUI.Button(new Rect(110, 0, 100, 20), "Build"))
         {
             _state = State.New;
-            _model = new HexBoardModel();
+            _boardModel = new HexBoardModel();
             return;
         }
 
@@ -150,7 +153,7 @@ public class HexBoardEditor : EditorWindow
             if (_fileToLoadIndex != 0)
             {
                 string fileName = _hexBoardFiles[_fileToLoadIndex].text;
-                _model = LoadHexBoard(fileName);
+                _boardModel = LoadHexBoard(fileName);
             }
         }
 
@@ -171,54 +174,54 @@ public class HexBoardEditor : EditorWindow
 
         // Name
         GUI.Label(new Rect(0, 25, 100, 20), "Board ID");
-        string name = EditorGUI.DelayedTextField(new Rect(100, 25, 100, 20), _model.ID);
-        if (name != _model.ID)
+        string name = EditorGUI.DelayedTextField(new Rect(100, 25, 100, 20), _boardModel.ID);
+        if (name != _boardModel.ID)
         {
-            _model.ID = name;
+            _boardModel.ID = name;
         }
 
         // Size
         GUI.Label(new Rect(0, 50, 100, 20), "Size");
         GUI.Label(new Rect(0, 75, 50, 20), "Width:");
-        float w = EditorGUI.DelayedFloatField(new Rect(55, 75, 50, 20), _model.Size.X);
-        if(w != _model.Size.X)
+        float w = EditorGUI.DelayedFloatField(new Rect(55, 75, 50, 20), _boardModel.Size.X);
+        if(w != _boardModel.Size.X)
         {
-            _model.Size.X = w;
+            _boardModel.Size.X = w;
         }
         GUI.Label(new Rect(110, 75, 50, 20), "Height:");
-        float h = EditorGUI.DelayedFloatField(new Rect(165, 75, 50, 20), _model.Size.Y);
-        if (h != _model.Size.Y)
+        float h = EditorGUI.DelayedFloatField(new Rect(165, 75, 50, 20), _boardModel.Size.Y);
+        if (h != _boardModel.Size.Y)
         {
-            _model.Size.Y = h;
+            _boardModel.Size.Y = h;
         }        
 
         // Scale
         GUI.Label(new Rect(0, 100, 100, 20),"Hex Scale");            
         GUI.Label(new Rect(0, 125, 20, 20), "X:");
-        float x = EditorGUI.DelayedFloatField(new Rect(21, 125, 50, 20),_model.Scale.X);
-        if (x != _model.Scale.X)
+        float x = EditorGUI.DelayedFloatField(new Rect(21, 125, 50, 20),_boardModel.Scale.X);
+        if (x != _boardModel.Scale.X)
         {
-            _model.Scale.X = x;
+            _boardModel.Scale.X = x;
         }
         GUI.Label(new Rect(80, 125, 20, 20),"Y:");
-        float y = EditorGUI.DelayedFloatField(new Rect(101, 125, 50, 20),_model.Scale.Y);
-        if (y != _model.Scale.Y)
+        float y = EditorGUI.DelayedFloatField(new Rect(101, 125, 50, 20),_boardModel.Scale.Y);
+        if (y != _boardModel.Scale.Y)
         {
-            _model.Scale.Y = y;
+            _boardModel.Scale.Y = y;
         }
         GUI.Label(new Rect(160, 125, 20, 20),"Z:");
-        float z = EditorGUI.DelayedFloatField(new Rect(181, 125, 50, 20),_model.Scale.Z);
-        if (z != _model.Scale.Z)
+        float z = EditorGUI.DelayedFloatField(new Rect(181, 125, 50, 20),_boardModel.Scale.Z);
+        if (z != _boardModel.Scale.Z)
         {
-            _model.Scale.Z = z;
+            _boardModel.Scale.Z = z;
         }
         
         // Layout
         GUI.Label(new Rect(0, 150, 100, 20), "Hex Layout", EditorStyles.boldLabel);                       
-        System.Enum selected = EditorGUI.EnumPopup(new Rect(105, 150, 100, 20),_model.Layout);
-        if ((HexLayout)selected != _model.Layout)
+        System.Enum selected = EditorGUI.EnumPopup(new Rect(105, 150, 100, 20),_boardModel.Layout);
+        if ((HexLayout)selected != _boardModel.Layout)
         {
-            _model.Layout = (HexLayout)selected;
+            _boardModel.Layout = (HexLayout)selected;
         }  
 
         // Edit Button
@@ -231,7 +234,7 @@ public class HexBoardEditor : EditorWindow
 
             if (GUI.Button(new Rect(105, 175, 100, 20),"Return"))
             {
-                _model = null;
+                _boardModel = null;
                 _state = State.MainMenu;
             }
         }
@@ -239,7 +242,7 @@ public class HexBoardEditor : EditorWindow
         {
             if (GUI.Button(new Rect(0, 175, 100, 20), "Return"))
             {
-                _model = null;                    
+                _boardModel = null;                    
                 _state = State.MainMenu;                    
             }
         }
@@ -264,10 +267,10 @@ public class HexBoardEditor : EditorWindow
         GUI.Label(rect, "ID");
         rect.x += SMALL_WIDTH;
         rect.width = LARGE_WIDTH;
-        string strName = EditorGUI.DelayedTextField(rect, _model.ID);
-        if(strName != _model.ID)
+        string strName = EditorGUI.DelayedTextField(rect, _boardModel.ID);
+        if(strName != _boardModel.ID)
         {
-            _model.ID = strName;
+            _boardModel.ID = strName;
             _isEdit = true;
         }
 
@@ -280,10 +283,10 @@ public class HexBoardEditor : EditorWindow
         GUI.Label(rect, "Col");
         rect.x += MEDIUM_WIDTH;
         rect.width = MEDIUM_WIDTH;
-        float x = EditorGUI.DelayedFloatField(rect, _model.Size.X);
-        if (x != _model.Size.X)
+        float x = EditorGUI.DelayedFloatField(rect, _boardModel.Size.X);
+        if (x != _boardModel.Size.X)
         {
-            _model.Size.X = x;
+            _boardModel.Size.X = x;
             _isEdit = true;
         }
         rect.x += MEDIUM_WIDTH;
@@ -291,10 +294,10 @@ public class HexBoardEditor : EditorWindow
         GUI.Label(rect, "Row");
         rect.x += MEDIUM_WIDTH;
         rect.width = MEDIUM_WIDTH;
-        float y = EditorGUI.DelayedFloatField(rect, _model.Size.Y);
-        if (y != _model.Size.Y)
+        float y = EditorGUI.DelayedFloatField(rect, _boardModel.Size.Y);
+        if (y != _boardModel.Size.Y)
         {
-            _model.Size.Y = y;
+            _boardModel.Size.Y = y;
             _isEdit = true;
         }
 
@@ -308,10 +311,10 @@ public class HexBoardEditor : EditorWindow
         GUI.Label(rect, "X");
         rect.x += SMALL_WIDTH;
         rect.width = MEDIUM_WIDTH;
-        x = EditorGUI.DelayedFloatField(rect, _model.Scale.X);
-        if(x != _model.Scale.X)
+        x = EditorGUI.DelayedFloatField(rect, _boardModel.Scale.X);
+        if(x != _boardModel.Scale.X)
         {
-            _model.Scale.X = x;
+            _boardModel.Scale.X = x;
             _isEdit = true;
         }
         rect.x += MEDIUM_WIDTH;
@@ -319,10 +322,10 @@ public class HexBoardEditor : EditorWindow
         GUI.Label(rect, "Y");
         rect.x += SMALL_WIDTH;
         rect.width = MEDIUM_WIDTH;
-        y = EditorGUI.DelayedFloatField(rect, _model.Scale.Y);
-        if (y != _model.Scale.Y)
+        y = EditorGUI.DelayedFloatField(rect, _boardModel.Scale.Y);
+        if (y != _boardModel.Scale.Y)
         {
-            _model.Scale.Y = y;
+            _boardModel.Scale.Y = y;
             _isEdit = true;
         }
         rect.x += MEDIUM_WIDTH;
@@ -330,10 +333,10 @@ public class HexBoardEditor : EditorWindow
         GUI.Label(rect, "Z");
         rect.x += SMALL_WIDTH;
         rect.width = MEDIUM_WIDTH;
-        float z = EditorGUI.DelayedFloatField(rect, _model.Scale.Z);
-        if (z != _model.Scale.Z)
+        float z = EditorGUI.DelayedFloatField(rect, _boardModel.Scale.Z);
+        if (z != _boardModel.Scale.Z)
         {
-            _model.Scale.Z = z;
+            _boardModel.Scale.Z = z;
             _isEdit = true;
         }
 
@@ -344,10 +347,10 @@ public class HexBoardEditor : EditorWindow
         GUI.Label(rect, "Layout");
         rect.x += MEDIUM_WIDTH;
         rect.width = LARGE_WIDTH;
-        HexLayout value = (HexLayout) EditorGUI.EnumPopup(rect, _model.Layout);
-        if(value != _model.Layout)
+        HexLayout value = (HexLayout) EditorGUI.EnumPopup(rect, _boardModel.Layout);
+        if(value != _boardModel.Layout)
         {
-            _model.Layout = value;
+            _boardModel.Layout = value;
             _isEdit = true;
         }
 
@@ -359,7 +362,7 @@ public class HexBoardEditor : EditorWindow
             if (GUI.Button(rect, "Rebuild"))
             {
                 _boardTool.Clean();
-                _model.HexTileModels.Clear();
+                _boardModel.HexTileModels.Clear();
                 _initBoard = false;
                 _isEdit = false;
                 return;
@@ -378,8 +381,7 @@ public class HexBoardEditor : EditorWindow
         if(selection != _tileSelectedIndex)
         {
             _tileSelectedIndex = selection;
-            // TODO - set the current selected tile model
-            //_boardTool.InputController.UpdateModelData(_tileModels[_tileSelectedIndex]);
+            _boardTool.OnModelSelectionChange(_tileModels[_tileSelectedIndex]);            
         }      
         
         // Save
@@ -392,7 +394,7 @@ public class HexBoardEditor : EditorWindow
             {
                 string jsonPath = Application.dataPath + "/Json/HexBoards/";
                 // Remove old name first
-                if (_model.ID != _orginalFileName)
+                if (_boardModel.ID != _orginalFileName)
                 {
                     string oldFile = jsonPath + _orginalFileName + ".json";
                     if (File.Exists(oldFile))
@@ -403,8 +405,8 @@ public class HexBoardEditor : EditorWindow
                 }
 
                 // Save data
-                string file = _model.ID + ".json";
-                string json = JsonUtility.ToJson(_model);
+                string file = _boardModel.ID + ".json";
+                string json = JsonUtility.ToJson(_boardModel);
 
                 File.WriteAllText(jsonPath + file, json);
                 AssetDatabase.Refresh();
@@ -456,34 +458,34 @@ public class HexBoardEditor : EditorWindow
         }
 
         // New board - build out default
-        if(_model.HexTileModels == null || _model.HexTileModels.Count == 0)
+        if(_boardModel.HexTileModels == null || _boardModel.HexTileModels.Count == 0)
         {
-            int total = Mathf.CeilToInt(_model.Size.X * _model.Size.Y);
-            _model.HexTileModels = new List<HexTileModel>(total);
+            int total = Mathf.CeilToInt(_boardModel.Size.X * _boardModel.Size.Y);
+            _boardModel.HexTileModels = new List<HexTileModel>(total);
 
             // Build default hex tile
             for (int i = 0; i < total; i++)
             {
                 HexTileModel tile = new HexTileModel();
-                tile.Scale = _model.Scale;
+                tile.Scale = _boardModel.Scale;
                 tile.MaterialName = DEFAULT_MATERIAL;
                 tile.TextureName = DEFAULT_TEXTURE;
-                tile.MovementCost = 1;
+                tile.MovementCost = 0;
                 tile.DefenseRating = 0;
                 tile.TerrainType = TerrainType.Water;
 
-                _model.AddHexTile(tile);
+                _boardModel.AddHexTile(tile);
             }
 
-            // Build out the model data
-            BuildHexBoard(_model);
+            // Build out the model positions data
+            BuildHexBoard(_boardModel);
         }
 
         // Send model data to scene to build board
-        _boardTool.BuildHexBoardFromModel(_model);
+        _boardTool.BuildHexBoardFromModel(_boardModel);
 
         // set oringal file name
-        _orginalFileName = _model.ID;
+        _orginalFileName = _boardModel.ID;
         _initBoard = true;
     }    
 
@@ -561,7 +563,7 @@ public class HexBoardEditor : EditorWindow
         _boardTool.Clean();
         _initBoard = false;
         _isEdit = false;
-        _model = null;
+        _boardModel = null;
         _orginalFileName = string.Empty;
     }
 
@@ -569,17 +571,17 @@ public class HexBoardEditor : EditorWindow
     //-------------
     private bool ValidateModel()
     {
-        if(string.IsNullOrEmpty(_model.ID))
+        if(string.IsNullOrEmpty(_boardModel.ID))
         {            
             return false;
         }
 
-        if(_model.Size.X == 0 || _model.Size.Y == 0)
+        if(_boardModel.Size.X == 0 || _boardModel.Size.Y == 0)
         {            
             return false;
         }
 
-        if(_model.Scale.X == 0 || _model.Scale.Y == 0 || _model.Scale.Z == 0)
+        if(_boardModel.Scale.X == 0 || _boardModel.Scale.Y == 0 || _boardModel.Scale.Z == 0)
         {            
             return false;
         }

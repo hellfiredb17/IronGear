@@ -17,53 +17,38 @@ public class HexTilePreferences : ScriptableObject
     public float SizeY = 0.433f;
 
     //---- Materials
-    //--------------    
+    //--------------
     [HideInInspector]
-    public MaterialDictionary Materials;
+    public StringMaterialDictionary Materials;
 
     //---- Textures
     //------------- 
     [HideInInspector]
-    public TextureDictionary Textures;
+    public StringTextureDictionary Textures;
 
     //---- Public Tile Functions
-    //--------------------------
-    public HexTile GetHexTile(HexType type)
+    //--------------------------    
+    public HexTile CreateDefaultHexTile()
     {
-        return GetHexTile(HexMaterial.Solid, type);
+        return GetHexTile("water");
     }
 
-    public HexTile GetHexTile(HexMaterial material, HexType type)
+    public HexTile CreateHexTile(string texture)
     {
-        HexTile tile = Instantiate<HexTile>(Prefab);
-        tile.Model.MaterialName = material.ToString();
-        tile.Model.TextureName = type.ToString();
-        tile.View.SetMaterial(Materials[material]);
-        tile.View.SetTexture(Textures[type]);
+        return GetHexTile(texture);
+    }   
+
+    //---- Private
+    //------------
+    private HexTile GetHexTile(string texture)
+    {
+        HexTile tile = Instantiate<HexTile>(Prefab);        
+        
+        tile.Model.MaterialName = "default";
+        tile.Model.TextureName = texture;
+
+        tile.View.SetMaterial(Materials["default"]);
+        tile.View.SetTexture(Textures[texture]);
         return tile;
-    }
-
-    public HexMaterial GetMaterialEnum(string materialName)
-    {
-        foreach(var mat in Materials)
-        {
-            if(mat.Key.ToString() == materialName)
-            {
-                return mat.Key;
-            }
-        }
-        return 0;
-    }
-
-    public HexType GetTypeEnum(string textureName)
-    {
-        foreach (var text in Textures)
-        {
-            if (text.Key.ToString() == textureName)
-            {
-                return text.Key;
-            }
-        }
-        return 0;
     }
 }
