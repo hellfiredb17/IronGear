@@ -78,7 +78,9 @@ public class BoardEditorTool : MonoBehaviour
             hex.transform.localRotation = Quaternion.Euler(modelData.Rotation.Convert());
             hex.transform.localScale = modelData.Scale.Convert();
             _tiles.Add(hex);
-        }       
+        }
+
+        CenterCamera();
     }    
 
     public void Clean()
@@ -97,6 +99,14 @@ public class BoardEditorTool : MonoBehaviour
 
     //---- Private
     //------------
+    private void CenterCamera()
+    {
+        // Find closest center        
+        Vector3 pos = (_tiles[_tiles.Count - 1].transform.position - _tiles[0].transform.position) * 0.5f;
+        pos.y = CameraBehaviour.transform.position.y;
+        CameraBehaviour.JumpTo(pos);
+    }
+
     private void OnHexTileHoverEnter(HexTile hexTile)
     {
         if(_currentHoverHexTile && hexTile != _currentHoverHexTile)

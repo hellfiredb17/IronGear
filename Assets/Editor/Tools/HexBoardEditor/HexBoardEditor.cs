@@ -43,12 +43,21 @@ public class HexBoardEditor : EditorWindow
     private string _fileName;
     private string _orginalFileName;
     private int _fileToLoadIndex;
-
-    private List<HexTileModel> _tileModels;
+    
     private List<GUIContent> _hexBoardFiles;
+    private Dictionary<string, HexTileModel> _hexTileModels;
     private List<GUIContent> _tileContent;
 
+    private List<GUIContent> _filteredTileContent;
     private int _tileSelectedIndex;
+
+    private List<GUIContent> _filterMovementContent;
+    private int _filterMovementIndex;
+
+    private List<GUIContent> _filterDefenseContent;
+    private int _filterDefenseIndex;
+
+    private float _tileHeight;
 
     private bool _initBoard;
     private bool _isEdit;
@@ -372,17 +381,81 @@ public class HexBoardEditor : EditorWindow
         rect.y += LINE + LINE;
         rect.x = 0;
         GUI.Label(rect, "Edit Tile", EditorStyles.boldLabel);
+        // Filters
+        rect.x = 0;
         rect.y += LINE;
-        rect.width = MEDIUM_WIDTH;
-        GUI.Label(rect, "Tile");
-        rect.x += MEDIUM_WIDTH;
         rect.width = LARGE_WIDTH;
-        int selection = EditorGUI.Popup(rect, _tileSelectedIndex, _tileContent.ToArray());
-        if(selection != _tileSelectedIndex)
+        GUI.Label(rect, "Movement");
+        rect.x += LARGE_WIDTH;
+        rect.width = MEDIUM_WIDTH;
+        int moveSelection = EditorGUI.Popup(rect, _filterMovementIndex, _filterMovementContent.ToArray());
+        if(moveSelection != _filterMovementIndex)
         {
-            _tileSelectedIndex = selection;
-            _boardTool.OnModelSelectionChange(_tileModels[_tileSelectedIndex]);            
-        }      
+            _filterMovementIndex = moveSelection;
+            FilterHexTiles(_filterMovementIndex, _filterDefenseIndex);
+            _tileSelectedIndex = 0;
+            HexTileModel model = _hexTileModels[_filteredTileContent[_tileSelectedIndex].text];
+            model.Scale.Y = _tileHeight;
+            _boardTool.OnModelSelectionChange(model);
+            return;
+        }
+
+        rect.x = 0;
+        rect.y += LINE;
+        rect.width = LARGE_WIDTH;
+        GUI.Label(rect, "Defense");
+        rect.x += LARGE_WIDTH;
+        rect.width = MEDIUM_WIDTH;
+        int defenseSelection = EditorGUI.Popup(rect, _filterDefenseIndex, _filterDefenseContent.ToArray());
+        if (defenseSelection != _filterDefenseIndex)
+        {
+            _filterDefenseIndex = defenseSelection;
+            FilterHexTiles(_filterMovementIndex, _filterDefenseIndex);
+            _tileSelectedIndex = 0;
+            HexTileModel model = _hexTileModels[_filteredTileContent[_tileSelectedIndex].text];
+            model.Scale.Y = _tileHeight;
+            _boardTool.OnModelSelectionChange(model);
+            return;
+        }
+
+        rect.x = 0;
+        rect.y += LINE;
+        rect.width = LARGE_WIDTH;
+        GUI.Label(rect, "HexTile");
+        // Filtered selection
+        if (_filteredTileContent.Count > 0)
+        {            
+            rect.x += LARGE_WIDTH;
+            rect.width = LARGE_WIDTH;
+            int selection = EditorGUI.Popup(rect, _tileSelectedIndex, _filteredTileContent.ToArray());
+            if (selection != _tileSelectedIndex)
+            {
+                _tileSelectedIndex = selection;
+                HexTileModel model = _hexTileModels[_filteredTileContent[_tileSelectedIndex].text];
+                model.Scale.Y = _tileHeight;
+                _boardTool.OnModelSelectionChange(model);
+            }
+
+            rect.x = 0;
+            rect.y += LINE;
+            rect.width = LARGE_WIDTH;
+            GUI.Label(rect, "Height");
+            rect.x += LARGE_WIDTH;
+            float height = EditorGUI.DelayedFloatField(rect, _tileHeight);
+            if(height != _tileHeight)
+            {
+                _tileHeight = height;
+                HexTileModel model = _hexTileModels[_filteredTileContent[_tileSelectedIndex].text];
+                model.Scale.Y = _tileHeight;
+                _boardTool.OnModelSelectionChange(model);
+            }
+        }
+        else
+        {
+            rect.x += LARGE_WIDTH;
+            rect.width = LARGE_WIDTH;
+            GUI.Label(rect, "No results");
+        }
         
         // Save
         if (ValidateModel())
@@ -486,6 +559,14 @@ public class HexBoardEditor : EditorWindow
 
         // set oringal file name
         _orginalFileName = _boardModel.ID;
+
+        // set filter list
+        _filteredTileContent = new List<GUIContent>(_tileContent);
+        HexTileFilterContent();
+        _tileHeight = 1.0f;
+        HexTileModel model = _hexTileModels[_filteredTileContent[_tileSelectedIndex].text];
+        model.Scale.Y = _tileHeight;
+        _boardTool.OnModelSelectionChange(model);
         _initBoard = true;
     }    
 
@@ -558,6 +639,73 @@ public class HexBoardEditor : EditorWindow
         ++col;
     }
 
+    private void HexTileFilterContent()
+    {
+        _filterMovementContent = new List<GUIContent>()
+        {
+            new GUIContent("Any"),
+            new GUIContent("0"),
+            new GUIContent("1"),
+            new GUIContent("2"),
+            new GUIContent("3"),
+            new GUIContent("4"),
+            new GUIContent("5")
+        };
+
+        _filterDefenseContent = new List<GUIContent>()
+        {
+            new GUIContent("Any"),
+            new GUIContent("0"),
+            new GUIContent("1"),
+            new GUIContent("2"),
+            new GUIContent("3"),
+            new GUIContent("4"),
+            new GUIContent("5")
+        };
+    }
+
+    private void FilterHexTiles(int movementCost, int defenseRating)
+    {
+        // Both set to anything
+        if(movementCost == 0 && defenseRating == 0)
+        {
+            _filteredTileContent = new List<GUIContent>(_tileContent);
+            return;
+        }
+        _filteredTileContent.Clear();
+
+        int i = 0;
+        foreach(HexTileModel model in _hexTileModels.Values)
+        {
+            if(movementCost == 0)
+            {
+                if (model.DefenseRating == (defenseRating - 1))
+                {
+                    _filteredTileContent.Add(_tileContent[i]);
+                }
+                ++i;
+                continue;
+            }
+
+            if (defenseRating == 0)
+            {
+                if (model.MovementCost == (movementCost - 1))
+                {
+                    _filteredTileContent.Add(_tileContent[i]);
+                }
+                ++i;
+                continue;
+            }
+
+            if (model.MovementCost == (movementCost - 1) &&
+                model.DefenseRating == (defenseRating - 1))
+            {
+                _filteredTileContent.Add(_tileContent[i]);
+            }
+            ++i;
+        }
+    }
+
     private void ExitEdit()
     {
         _boardTool.Clean();
@@ -620,7 +768,7 @@ public class HexBoardEditor : EditorWindow
     private void LoadHexTiles()
     {
         // Load tiles
-        _tileModels = new List<HexTileModel>();
+        _hexTileModels = new Dictionary<string, HexTileModel>();
         _tileContent = new List<GUIContent>();
 
         string jsonPath = Application.dataPath + "/Json/HexTiles/";
@@ -631,12 +779,11 @@ public class HexBoardEditor : EditorWindow
             {
                 continue;
             }
-
-            string json = File.ReadAllText(files[i]);
-            _tileModels.Add(JsonUtility.FromJson<HexTileModel>(json));
-
+            
             string shortFilename = files[i].Replace(jsonPath, "");
             shortFilename = shortFilename.Replace(".json", "");
+            string json = File.ReadAllText(files[i]);
+            _hexTileModels.Add(shortFilename, JsonUtility.FromJson<HexTileModel>(json));
             _tileContent.Add(new GUIContent(shortFilename));
         }
     }

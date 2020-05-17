@@ -82,6 +82,12 @@ public class CameraEditorBehaviour : MonoBehaviour
 
     public InputController Input => _inputController;
 
+    public void JumpTo(Vector3 pos)
+    {
+        transform.position = pos;
+        _cameraTarget.position = pos;
+    }
+
     //---- Movement
     //-------------
     private void LerpToTarget()
@@ -150,8 +156,7 @@ public class CameraEditorBehaviour : MonoBehaviour
     }
 
     private void OnMouseScroll(float value)
-    {
-        Debug.Log("Mouse Scroll value: " + value);
+    {        
         _zoomValue += (value *  _preferences.ZoomInterval) * -1.0f;
         _zoomValue = Mathf.Clamp(_zoomValue, _preferences.ZoomClamp.x, _preferences.ZoomClamp.y);
         _camera.orthographicSize = _zoomValue;
