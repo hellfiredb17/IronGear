@@ -64,7 +64,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Camera\CameraEditorBehaviour.cs" />
-    <Compile Include="Assets\Scripts\HexBoard\HexBoardCreator.cs" />
+    <Compile Include="Assets\Scripts\HexBoard\HexBoard.cs" />
+    <Compile Include="Assets\Scripts\HexBoard\HexBoardController.cs" />
+    <Compile Include="Assets\Scripts\HexBoard\HexBoardLoader.cs" />
     <Compile Include="Assets\Scripts\HexBoard\HexBoardModel.cs" />
     <Compile Include="Assets\Scripts\HexBoard\HexBoardView.cs" />
     <Compile Include="Assets\Scripts\HexTile\HexTile.cs" />
@@ -77,6 +79,7 @@
     <Compile Include="Assets\Scripts\Shared\Utils\HexMath.cs" />
     <Compile Include="Assets\Scripts\Tools\BoardEditorTool.cs" />
     <Compile Include="Assets\Scripts\Tools\InputController.cs" />
+    <Compile Include="Assets\Scripts\Tools\JsonLoader.cs" />
     <Compile Include="Assets\Scripts\Utils\SerializableExtensions.cs" />
     <Reference Include="UnityEngine">
       <HintPath>A:/Programs/UnityEditors/2019.3.12f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>

@@ -132,7 +132,7 @@ public class HexTileEditor : EditorWindow
                         UpdateScale();
                     }
                 }
-                _filename = "Hex_" + _textureContent[_textureIndex].text + "_" + _scale.y;
+                _filename = "Hex_" + _textureContent[_textureIndex].text;
             }
 
             EditorGUILayout.LabelField(_filename, EditorStyles.textArea);                    
@@ -171,7 +171,7 @@ public class HexTileEditor : EditorWindow
                 _canSave = true;
                 _textureIndex = selection;
                 UpdateTexture(_textureContent[_textureIndex].text);
-                _filename = "Hex_" + _textureContent[_textureIndex].text + "_" + _scale.y;
+                _filename = "Hex_" + _textureContent[_textureIndex].text;
             }
         });
     }
@@ -240,7 +240,7 @@ public class HexTileEditor : EditorWindow
                 _canSave = true;
                 _scale.y = y;
                 UpdateScale();
-                _filename = "Hex_" + _textureContent[_textureIndex].text + "_" + _scale.y;
+                _filename = "Hex_" + _textureContent[_textureIndex].text;
             }
         });
 

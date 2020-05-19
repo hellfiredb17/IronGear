@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// The Visual components of a hex board
-/// </summary>
 namespace HexWorld
 {
+    /// <summary>
+    /// The Visual components of a hex board
+    /// </summary>
     public class HexBoardView : MonoBehaviour
     {
         //---- Variables
         //--------------
-        public Transform HexTileTransform;
+        public Transform Root;
+        public List<HexTile> HexTiles;        
+
+        //---- Public
+        //-----------
     }
 }

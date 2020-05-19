@@ -63,7 +63,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Editor\Tools\HexBoardEditor\HexBoardCreatorEditor.cs" />
     <Compile Include="Assets\Editor\Tools\HexBoardEditor\HexBoardEditor.cs" />
     <Compile Include="Assets\Editor\Tools\HexTileEditor\HexTileEditor.cs" />
     <Compile Include="Assets\Editor\Tools\HexTileEditor\HexTileEditorPreferences.cs" />
