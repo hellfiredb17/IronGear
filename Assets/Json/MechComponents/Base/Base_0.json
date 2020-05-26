@@ -1,0 +1,8 @@
+{
+    "Id": "Base_0",
+    "DisplayName": "Base Test",
+    "ModelAsset": "Base001",
+    "HitPoints": 10,
+    "Weight": 0,
+    "Energy": 5
+}

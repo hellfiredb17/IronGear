@@ -66,6 +66,8 @@
     <Compile Include="Assets\Editor\Tools\HexBoardEditor\HexBoardEditor.cs" />
     <Compile Include="Assets\Editor\Tools\HexTileEditor\HexTileEditor.cs" />
     <Compile Include="Assets\Editor\Tools\HexTileEditor\HexTileEditorPreferences.cs" />
+    <Compile Include="Assets\Editor\Tools\MechComponentEditor\MechBaseEditor.cs" />
+    <Compile Include="Assets\Editor\Tools\MechComponentEditor\MechComponentEditor.cs" />
     <Reference Include="UnityEngine">
       <HintPath>A:/Programs/UnityEditors/2019.3.12f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
