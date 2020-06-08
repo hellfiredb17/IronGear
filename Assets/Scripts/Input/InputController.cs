@@ -123,7 +123,7 @@ public class InputController : MonoBehaviour
         Vector2 scroll = Input.mouseScrollDelta;
         if (scroll.y != 0)
         {
-            OnMouseScrollY(scroll.y);
+            OnMouseScrollY?.Invoke(scroll.y);
         }
 
         // Movement

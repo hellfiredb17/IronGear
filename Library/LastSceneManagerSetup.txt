@@ -1,5 +1,5 @@
 sceneSetups:
-- path: Assets/Scenes/Hanger/MechHanger.unity
+- path: Assets/Scenes/TestScenes/MovementScene.unity
   isLoaded: 1
   isActive: 1
   isSubScene: 0

@@ -1,13 +1,9 @@
-﻿using System.CodeDom;
+﻿using HexWorld;
+using System.CodeDom;
 using UnityEngine;
 
-[RequireComponent(typeof(Camera), typeof(InputController))]
-public class CameraEditorBehaviour : MonoBehaviour
+public class CameraEditorBehaviour : InputCamera
 {
-    //---- Delegate
-    //-------------
-    public delegate void MouseRayCast(HexTile tile);
-
     //---- Events
     //-----------
     public MouseRayCast OnMouseHoverHexTile;
@@ -15,9 +11,7 @@ public class CameraEditorBehaviour : MonoBehaviour
 
     //---- Variables
     //--------------
-    [SerializeField] private BoardEditorPreferences _preferences;
-    [SerializeField] private Camera _camera;
-    [SerializeField] private InputController _inputController;
+    [SerializeField] private BoardEditorPreferences _preferences;    
     [SerializeField] private GameObject _mouseTarget;
     [SerializeField] private Transform _cameraTarget;
 
@@ -30,11 +24,9 @@ public class CameraEditorBehaviour : MonoBehaviour
 
     //---- Unity
     //----------
-    private void Awake()
+    protected override void Awake()
     {
-        _camera = GetComponent<Camera>();        
-        _inputController = GetComponent<InputController>();
-
+        base.Awake();
         _cameraTarget.rotation = transform.rotation;
         _cameraTarget.position = transform.position;
     }
@@ -44,13 +36,13 @@ public class CameraEditorBehaviour : MonoBehaviour
         _inputController.Enable(true);
     }
 
-    private void OnEnable()
+    protected override void OnEnable()
     {
         _inputController.OnMousePosition += OnMousePosition;
         _inputController.OnMouseLeftBtnDown += OnMouseBtn0Down;
         _inputController.OnMouseRightBtnDown += OnMouseBtn1Down;
         _inputController.OnMouseScrollY += OnMouseScroll;
-        _inputController.Set(); // sets init values
+        base.OnEnable();
     }
 
     private void OnDisable()
@@ -68,7 +60,14 @@ public class CameraEditorBehaviour : MonoBehaviour
 
     private void LateUpdate()
     {
-        Raycast();
+        if(RaycastToTile(out HexTile tile))
+        {
+            OnMouseHoverHexTile?.Invoke(tile);
+            if (_mouseBtn0Down)
+            {
+                OnMouseClickHexTile?.Invoke(tile);
+            }
+        }
 
         if (_mouseBtn1Down)
         {
@@ -78,8 +77,6 @@ public class CameraEditorBehaviour : MonoBehaviour
 
     //---- Public
     //-----------
-    public Camera Camera => _camera;
-
     public InputController Input => _inputController;
 
     public void JumpTo(Vector3 pos)
@@ -111,28 +108,7 @@ public class CameraEditorBehaviour : MonoBehaviour
 
         _lastMousePosition = _mousePosition;
         _lastMousePosition.z = _camera.transform.position.y;
-    }
-
-    private void Raycast()
-    {
-        Vector3 mousePos = _mousePosition;
-        mousePos.z = _camera.transform.position.y;
-        Vector3 mousePointerToWorld = _camera.ScreenToWorldPoint(mousePos);
-        mousePointerToWorld.y = _camera.transform.position.y;
-        _mouseTarget.transform.position = mousePointerToWorld;
-        Debug.DrawLine(mousePointerToWorld, mousePointerToWorld + (Vector3.down * 20), Color.yellow);
-
-        HexTile tile = null;
-        if (Physics.Raycast(mousePointerToWorld, Vector3.down, out RaycastHit ray))
-        {
-            tile = ray.collider.GetComponentInParent<HexTile>();            
-        }
-        OnMouseHoverHexTile?.Invoke(tile);
-        if(_mouseBtn0Down)
-        {
-            OnMouseClickHexTile?.Invoke(tile);
-        }
-    }
+    }   
 
     //---- Events
     //-----------

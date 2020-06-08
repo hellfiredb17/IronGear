@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// The Main View for a Hex Tile
@@ -12,12 +13,16 @@ namespace HexWorld
     {
         //---- Variables
         //--------------
+        [SerializeField] private Transform _topSlot;
         [SerializeField] private MeshRenderer _meshRenderer;
         [SerializeField] private MeshCollider _meshCollider;
         [SerializeField] private GameObject _selector;
 
+        public int Index;
+
         //---- Properties
         //---------------
+        public Vector3 Pos => _topSlot.position;
         public MeshRenderer Renderer => _meshRenderer;
         public MeshCollider Collider => _meshCollider;
         public string MaterialName => _meshRenderer.sharedMaterial.name;

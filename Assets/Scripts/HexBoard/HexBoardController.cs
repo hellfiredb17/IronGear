@@ -34,6 +34,7 @@ namespace HexWorld
                 hexTile.transform.localPosition = hexTileModel.Position.Convert();
                 hexTile.transform.localRotation = Quaternion.Euler(hexTileModel.Rotation.Convert());
                 hexTile.transform.localScale = hexTileModel.Scale.Convert();
+                hexTile.View.Index = i;
                 view.HexTiles.Add(hexTile);
             }
         }

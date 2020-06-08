@@ -11,9 +11,16 @@ namespace Rigs
     {
         //---- Variables
         //--------------
+        [Header("Main")]
         public MechModel Model;
         public MechView View;
         public MechController Controller;
+
+        [Header("Sub")]
+        public MechBase Base;
+        public MechTorso Torso;
+        public MechArm ArmLeft;
+        public MechArm ArmRight;
 
         //---- Unity
         //----------
@@ -22,6 +29,5 @@ namespace Rigs
             View.Root = this;
             Controller.Root = this;
         }
-
     } // end class
 } // end namespace

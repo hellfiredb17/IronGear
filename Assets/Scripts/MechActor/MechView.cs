@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace Rigs
 {
@@ -6,27 +7,24 @@ namespace Rigs
     {
         //---- Variables
         //--------------
-        public Mech Root;        
+        public Mech Root;
+        public int Index;
+
+        public List<HexTile> PossibleMovementList;
 
         //---- Public
         //-----------
-        public void RelinkComponents()
+        public void NormalizeTiles()
         {
-            // Mech will also have a base, torso - arms can differ
-            // Base
-            Root.Controller.Base.View.transform.position = Root.View.transform.position;
-            // Torso
-            Root.Controller.Torso.View.transform.position = Root.Controller.Base.View.TorsoSlot.position;
-            // Arms
-            if(Root.Model.ArmLeftModel != null)
+            if(PossibleMovementList == null || PossibleMovementList.Count == 0)
             {
-                Root.Controller.ArmLeft.View.transform.position = Root.Controller.Torso.View.ArmLeftSlot.position;
+                return;
             }
-            if (Root.Model.ArmRightModel != null)
+            for(int i = 0; i < PossibleMovementList.Count; i++)
             {
-                Root.Controller.ArmRight.View.transform.position = Root.Controller.Torso.View.ArmRightSlot.position;
+                PossibleMovementList[i].View.OnPointerExit();
             }
-        }        
+        }
 
     } // end class
 } // end namespace
