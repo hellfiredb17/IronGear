@@ -193,6 +193,7 @@ public class TestScene : MonoBehaviour
         _mech.Base.Model = baseModel;
 
         // Load model's asset
+#if UNITY_EDITOR
         BaseComponent asset = AssetDatabase.LoadAssetAtPath<BaseComponent>("Assets" + MechPreferences.MechBaseContentPath + baseModel.ModelAsset + ".prefab");
         if(asset == null)
         {
@@ -201,6 +202,7 @@ public class TestScene : MonoBehaviour
         }
         asset = Instantiate(asset);
         _mech.Base.View.AttachBaseAsset(asset);
+#endif
 
         // Center on board
         HexTile tile = _hexBoard.View.HexTiles[55];

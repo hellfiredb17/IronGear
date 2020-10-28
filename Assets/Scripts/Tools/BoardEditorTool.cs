@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using HexWorld;
 using UnityEditor;
@@ -27,9 +26,11 @@ public class BoardEditorTool : MonoBehaviour
 
     //---- Unity
     //----------
-    private static void OpenEditorWindow()
+    private static void OpenEditorWindow()    
     {
+#if UNITY_EDITOR
         EditorApplication.ExecuteMenuItem("IronGears/Design/Board Editor");
+#endif
     }
 
     private void Awake()

@@ -29,5 +29,11 @@ namespace Rigs
             View.Root = this;
             Controller.Root = this;
         }
+
+        private void Start()
+        {
+            MouseKeyboardControl.Subscribe<InputController.InputVector3>("MouseToAngle", Controller.AimAtTarget);
+        }
+
     } // end class
 } // end namespace

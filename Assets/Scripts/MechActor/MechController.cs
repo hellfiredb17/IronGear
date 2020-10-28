@@ -12,6 +12,17 @@ namespace Rigs
         private static float EPSILON = 0.01f;
         public Mech Root;
         private Coroutine _movementCoroutine;
+        private Quaternion _rotation;
+
+        //---- Updates
+        //------------
+        private void FixedUpdate()
+        {
+            if(!Mathf.Approximately(Root.transform.rotation.y, _rotation.y))
+            {
+                RotateTo();
+            }
+        }
 
         //---- Public
         //-----------        
@@ -24,8 +35,23 @@ namespace Rigs
             _movementCoroutine = StartCoroutine(InternalMoveTo(path, onComplete));
         }
 
+        public void AimAtTarget(Vector3 target)
+        {
+            target.y = Root.transform.position.y;
+            target = target - Root.transform.position;
+            _rotation = Quaternion.LookRotation(target, Vector3.up);
+            Root.transform.rotation = _rotation;
+        }
+
         //---- Private
         //------------
+        private void RotateTo()
+        {
+            float ty = _rotation.eulerAngles.y;
+            float cy = Root.transform.rotation.eulerAngles.y;
+            float delta = ty - cy;
+        }
+
         private IEnumerator InternalMoveTo(Queue<HexTile> path, Action onComplete)
         {
             if(path.Count == 0)

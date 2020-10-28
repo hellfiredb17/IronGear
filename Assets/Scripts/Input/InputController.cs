@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using HexWorld;
+﻿using UnityEngine;
 
 public class InputController : MonoBehaviour
 {
