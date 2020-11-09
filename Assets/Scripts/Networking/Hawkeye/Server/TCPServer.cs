@@ -19,6 +19,6 @@ public class TCPServer : MonoBehaviour
     //----------
     private void Start()
     {
-        server.Open(Shared.LOCAL_IPADDRESS, Shared.PORT);
+        server.Open(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT);
     }
 }

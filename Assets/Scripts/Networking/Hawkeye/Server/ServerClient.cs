@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Net.Sockets;
 using UnityEngine;
+using Hawkeye;
 
 namespace Hawkeye.Server
 {
-    public class Client
+    public class ServerClient
     {
         public int Id;
         public TCP tcp;
 
-        public Client(int clientId)
+        public ServerClient(int clientId)
         {
             Id = clientId;
             tcp = new TCP(Id);
@@ -17,28 +18,35 @@ namespace Hawkeye.Server
 
         public class TCP
         {
+            //---- Variables
+            //--------------
             public TcpClient socket;
             private NetworkStream stream;
             private byte[] receiveBuffer;
             private readonly int id;
 
+            //---- Ctor
+            //---------
             public TCP(int id)
             {
                 this.id = id;
             }
 
+            //---- Connect
+            //------------
             public void Connect(TcpClient socket)
             {
                 this.socket = socket;
-                this.socket.ReceiveBufferSize = Shared.DATABUFFERSIZE;
-                this.socket.SendBufferSize = Shared.DATABUFFERSIZE;
+                this.socket.ReceiveBufferSize = SharedConsts.DATABUFFERSIZE;
+                this.socket.SendBufferSize = SharedConsts.DATABUFFERSIZE;
                 stream = this.socket.GetStream();
-                receiveBuffer = new byte[Shared.DATABUFFERSIZE];
+                receiveBuffer = new byte[SharedConsts.DATABUFFERSIZE];
 
                 // Start reading buffer
-                stream.BeginRead(receiveBuffer, 0, Shared.DATABUFFERSIZE, ReceiveCallback, null);
+                stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
 
                 // TODO: send weclome packet
+                Send("Welcome to start of game server");
             }
 
             private void ReceiveCallback(IAsyncResult result)
@@ -58,13 +66,30 @@ namespace Hawkeye.Server
                     // TODO: handle data
 
                     // start reading again
-                    stream.BeginRead(receiveBuffer, 0, Shared.DATABUFFERSIZE, ReceiveCallback, null);
+                    stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
                 }
                 catch (Exception ex)
                 {
                     Debug.LogError($"Error receiving TCP data: {ex}");
                     // TODO: disconnect
                 }
+            }
+
+            //---- Send
+            //---------
+            public void Send(string json)
+            {
+                NetworkPacket packet = new NetworkPacket();
+                if(packet.Write(id, json))
+                {
+                    stream.BeginWrite(packet.Bytes, 0, packet.Size, SendPacketCallback, null);
+                }
+            }
+
+            private void SendPacketCallback(IAsyncResult result)
+            {
+                stream.EndWrite(result);
+                Debug.Log("[Server]: Sent packet to client");
             }
         } // end tcp
     } // end client    

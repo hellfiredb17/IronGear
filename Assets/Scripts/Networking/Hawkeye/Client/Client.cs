@@ -22,19 +22,23 @@ namespace Hawkeye.Client
 
         public class TCP
         {
+            //---- Variables
+            //--------------
             public TcpClient socket;
             private NetworkStream stream;
             private byte[] receiveBuffer;
 
+            //---- Connect
+            //------------
             public void Connect()
             {
                 socket = new TcpClient
                 {
-                    ReceiveBufferSize = Shared.DATABUFFERSIZE,
-                    SendBufferSize = Shared.DATABUFFERSIZE
+                    ReceiveBufferSize = SharedConsts.DATABUFFERSIZE,
+                    SendBufferSize = SharedConsts.DATABUFFERSIZE
                 };
-                receiveBuffer = new byte[Shared.DATABUFFERSIZE];
-                socket.BeginConnect(Shared.LOCAL_IPADDRESS, Shared.PORT, ConnectCallback, socket);
+                receiveBuffer = new byte[SharedConsts.DATABUFFERSIZE];
+                socket.BeginConnect(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT, ConnectCallback, socket);
             }
 
             private void ConnectCallback(IAsyncResult result)
@@ -45,7 +49,7 @@ namespace Hawkeye.Client
                     return;
                 }
                 stream = socket.GetStream();
-                stream.BeginRead(receiveBuffer, 0, Shared.DATABUFFERSIZE, ReceiveCallback, null);
+                stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
                 Debug.Log("[Client]: Connected to server");
             }
 
@@ -64,10 +68,14 @@ namespace Hawkeye.Client
                     
                     Array.Copy(receiveBuffer, data, byteLength);
 
-                    // TODO: handle data
+                    NetworkPacket packet = new NetworkPacket();
+                    if(packet.Read(data))
+                    {
+                        // TODO - process message
+                    }
 
                     // start reading again
-                    stream.BeginRead(receiveBuffer, 0, Shared.DATABUFFERSIZE, ReceiveCallback, null);
+                    stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
                 }
                 catch (Exception ex)
                 {

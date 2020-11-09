@@ -11,13 +11,13 @@ namespace Hawkeye.Server
         //---- Variables
         //--------------
         private TcpListener listener;        
-        private Dictionary<int, Client> clients;
+        private Dictionary<int, ServerClient> clients;
 
         //---- Ctor
         //---------
         public Server()
         {
-            clients = new Dictionary<int, Client>();
+            clients = new Dictionary<int, ServerClient>();
         }
 
         //---- Open
@@ -46,13 +46,13 @@ namespace Hawkeye.Server
             listener.BeginAcceptTcpClient(new AsyncCallback(ServerAcceptClient), null);
 
             Debug.Log($"[Server]: Incoming connection from {client.Client.RemoteEndPoint}...");
-            if(clients.Count == Shared.MAXCONNECTIONS)
+            if(clients.Count == SharedConsts.MAXCONNECTIONS)
             {
                 Debug.Log("[Server]: Failed to connect: Server full");
                 return;
             }
 
-            Client tcpClient = new Client(clients.Count);
+            ServerClient tcpClient = new ServerClient(clients.Count);
             tcpClient.tcp.Connect(client);
             clients.Add(clients.Count, tcpClient);
         }

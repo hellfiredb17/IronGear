@@ -2,7 +2,7 @@
 
 namespace Hawkeye
 {
-    public static class Shared
+    public static class SharedConsts
     {
         public static int PORT = 4400;
         public static int MAXCONNECTIONS = 4;
