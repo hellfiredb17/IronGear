@@ -87,8 +87,7 @@ namespace Hawkeye
             {
                 dataLength = ReadInt(0, data);
                 recipient = ReadInt(sizeof(int), data);
-                message = ReadString(sizeof(int) * 2, dataLength, data);
-                Debug.Log($"Network package read Owner:{recipient} MessageSize:{dataLength} Message:{message}");
+                message = ReadString(sizeof(int) * 2, dataLength, data);                
                 return true;
             }
             catch(Exception ex)

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Net;
 using System.Net.Sockets;
 using System;
 
@@ -20,6 +19,14 @@ namespace Hawkeye.Client
             tcp.Connect();
         }
 
+        public void SetId(int id)
+        {
+            this.Id = id;
+            tcp.SetId(id);
+        }
+
+        //---- TCP Class ----
+        //-------------------
         public class TCP
         {
             //---- Variables
@@ -27,6 +34,20 @@ namespace Hawkeye.Client
             public TcpClient socket;
             private NetworkStream stream;
             private byte[] receiveBuffer;
+            private int id;
+
+            //---- Ctor
+            //---------
+            public TCP()
+            {                
+            }
+
+            //---- Setters
+            //------------
+            public void SetId(int id)
+            {
+                this.id = id;
+            }
 
             //---- Connect
             //------------
@@ -68,10 +89,11 @@ namespace Hawkeye.Client
                     
                     Array.Copy(receiveBuffer, data, byteLength);
 
+                    // read packet
                     NetworkPacket packet = new NetworkPacket();
                     if(packet.Read(data))
                     {
-                        // TODO - process message
+                        Debug.Log($"[Client]: MessageSize:{packet.Size} Message:{packet.NetworkMessage}");
                     }
 
                     // start reading again
@@ -82,6 +104,23 @@ namespace Hawkeye.Client
                     Debug.LogError($"Error receiving TCP data: {ex}");
                     // TODO: disconnect
                 }
+            }
+
+            //---- Send
+            //---------
+            public void Send(string json)
+            {
+                NetworkPacket packet = new NetworkPacket();
+                if (packet.Write(id, json))
+                {
+                    stream.BeginWrite(packet.Bytes, 0, packet.Size, SendPacketCallback, null);
+                }
+            }
+
+            private void SendPacketCallback(IAsyncResult result)
+            {
+                stream.EndWrite(result);
+                Debug.Log("[Client]: Sent packet to server");
             }
 
         } // end tcp

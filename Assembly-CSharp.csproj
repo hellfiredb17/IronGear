@@ -99,6 +99,8 @@
     <Compile Include="Assets\Scripts\MechActor\Torso\TorsoComponent.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\Client.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\TCPClient.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\NetMessage.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\Server\ServerNetMessages.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\Server.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\ServerClient.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\TCPServer.cs" />

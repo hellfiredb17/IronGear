@@ -7,6 +7,8 @@ public class TCPServer : MonoBehaviour
     //---- Variables
     //--------------
     private Server server;
+    private int gameTime;
+    private float fTime;
 
     //---- Awake
     //----------
@@ -20,5 +22,25 @@ public class TCPServer : MonoBehaviour
     private void Start()
     {
         server.Open(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT);
+    }
+
+    //---- Update
+    //-----------
+    private void Update()
+    {
+        if(!server.Connected)
+        {
+            return;
+        }
+
+        fTime += Time.deltaTime;
+
+        // For testing lets send a message every second to connected clients
+        int t = Mathf.FloorToInt(fTime);
+        if(gameTime != t)
+        {
+            gameTime = t;
+            server.Broadcast(new GameTime(gameTime));
+        }
     }
 }

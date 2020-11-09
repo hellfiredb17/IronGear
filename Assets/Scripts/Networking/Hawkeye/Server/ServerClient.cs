@@ -43,10 +43,7 @@ namespace Hawkeye.Server
                 receiveBuffer = new byte[SharedConsts.DATABUFFERSIZE];
 
                 // Start reading buffer
-                stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
-
-                // TODO: send weclome packet
-                Send("Welcome to start of game server");
+                //stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
             }
 
             private void ReceiveCallback(IAsyncResult result)
@@ -62,8 +59,13 @@ namespace Hawkeye.Server
 
                     byte[] data = new byte[byteLength];
                     Array.Copy(receiveBuffer, data, byteLength);
-
-                    // TODO: handle data
+                    
+                    // read packet
+                    NetworkPacket packet = new NetworkPacket();
+                    if (packet.Read(data))
+                    {
+                        // TODO - process message
+                    }
 
                     // start reading again
                     stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
@@ -88,8 +90,7 @@ namespace Hawkeye.Server
 
             private void SendPacketCallback(IAsyncResult result)
             {
-                stream.EndWrite(result);
-                Debug.Log("[Server]: Sent packet to client");
+                stream.EndWrite(result);                
             }
         } // end tcp
     } // end client    
