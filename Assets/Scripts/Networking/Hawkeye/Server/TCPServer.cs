@@ -1,46 +1,34 @@
 ﻿using UnityEngine;
-using Hawkeye.Server;
 using Hawkeye;
 
 public class TCPServer : MonoBehaviour
 {
     //---- Variables
     //--------------
-    private Server server;
-    private int gameTime;
-    private float fTime;
-
-    //---- Awake
-    //----------
-    private void Awake()
-    {
-        server = new Server();
-    }
-
-    //---- Start
-    //----------
-    private void Start()
-    {
-        server.Open(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT);
-    }
+    private ServerGameState gameState;
 
     //---- Update
     //-----------
     private void Update()
     {
-        if(!server.Connected)
+        KeyboardInput();
+    }
+
+    private void KeyboardInput()
+    {
+        if(Input.GetKeyDown(KeyCode.Q))
         {
-            return;
+            if(gameState == null)
+            {
+                gameState = new ServerGameState();                
+            }
+            // TODO - remove game state
         }
 
-        fTime += Time.deltaTime;
-
-        // For testing lets send a message every second to connected clients
-        int t = Mathf.FloorToInt(fTime);
-        if(gameTime != t)
+        if (Input.GetKeyDown(KeyCode.W))
         {
-            gameTime = t;
-            server.Broadcast(new GameTime(gameTime));
+            // open for connections
+            gameState.Open(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT);            
         }
     }
 }

@@ -15,10 +15,6 @@ public class HostMenu : MenuBase
 
     //---- Interface
     //--------------
-    public override void Init()
-    {       
-    }
-
     public override void Enter()
     {
         gameName.text = string.Empty;

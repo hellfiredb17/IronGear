@@ -25,6 +25,10 @@ namespace Hawkeye.Server
             private byte[] receiveBuffer;
             private readonly int id;
 
+            //---- Events
+            //-----------
+            public Action<string, string> OnProcessNetMessage;
+
             //---- Ctor
             //---------
             public TCP(int id)
@@ -43,7 +47,7 @@ namespace Hawkeye.Server
                 receiveBuffer = new byte[SharedConsts.DATABUFFERSIZE];
 
                 // Start reading buffer
-                //stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
+                stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
             }
 
             private void ReceiveCallback(IAsyncResult result)
@@ -64,7 +68,7 @@ namespace Hawkeye.Server
                     NetworkPacket packet = new NetworkPacket();
                     if (packet.Read(data))
                     {
-                        // TODO - process message
+                        OnProcessNetMessage?.Invoke(packet.MessageType, packet.NetworkMessage);
                     }
 
                     // start reading again
@@ -79,10 +83,10 @@ namespace Hawkeye.Server
 
             //---- Send
             //---------
-            public void Send(string json)
+            public void Send(NetMessage netMessage)
             {
                 NetworkPacket packet = new NetworkPacket();
-                if(packet.Write(id, json))
+                if (packet.Write(netMessage))
                 {
                     stream.BeginWrite(packet.Bytes, 0, packet.Size, SendPacketCallback, null);
                 }

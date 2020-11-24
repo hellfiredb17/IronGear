@@ -14,15 +14,25 @@ namespace Hawkeye.Client
             tcp = new TCP();
         }
 
-        public void ConnectToServer()
+        public void ConnectToServer(string ipaddress, int port)
         {
-            tcp.Connect();
+            tcp.Connect(ipaddress, port);
         }
 
         public void SetId(int id)
         {
             this.Id = id;
             tcp.SetId(id);
+        }
+
+        public void Send(NetMessage netMessage)
+        {
+            tcp.Send(netMessage);
+        }
+
+        public void Disconnect()
+        {
+            tcp.Disconnect();
         }
 
         //---- TCP Class ----
@@ -35,6 +45,10 @@ namespace Hawkeye.Client
             private NetworkStream stream;
             private byte[] receiveBuffer;
             private int id;
+
+            //---- Event
+            //----------
+            public Action<string, string> OnProcessNetMessage;
 
             //---- Ctor
             //---------
@@ -51,7 +65,7 @@ namespace Hawkeye.Client
 
             //---- Connect
             //------------
-            public void Connect()
+            public void Connect(string ipaddress, int port)
             {
                 socket = new TcpClient
                 {
@@ -59,7 +73,7 @@ namespace Hawkeye.Client
                     SendBufferSize = SharedConsts.DATABUFFERSIZE
                 };
                 receiveBuffer = new byte[SharedConsts.DATABUFFERSIZE];
-                socket.BeginConnect(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT, ConnectCallback, socket);
+                socket.BeginConnect(ipaddress, port, ConnectCallback, socket);
             }
 
             private void ConnectCallback(IAsyncResult result)
@@ -71,7 +85,7 @@ namespace Hawkeye.Client
                 }
                 stream = socket.GetStream();
                 stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
-                Debug.Log("[Client]: Connected to server");
+                //Debug.Log("[Client]: Connected to server");
             }
 
             private void ReceiveCallback(IAsyncResult result)
@@ -92,8 +106,8 @@ namespace Hawkeye.Client
                     // read packet
                     NetworkPacket packet = new NetworkPacket();
                     if(packet.Read(data))
-                    {
-                        Debug.Log($"[Client]: MessageSize:{packet.Size} Message:{packet.NetworkMessage}");
+                    {                        
+                        OnProcessNetMessage?.Invoke(packet.MessageType, packet.NetworkMessage);
                     }
 
                     // start reading again
@@ -108,10 +122,10 @@ namespace Hawkeye.Client
 
             //---- Send
             //---------
-            public void Send(string json)
+            public void Send(NetMessage netMessage)
             {
                 NetworkPacket packet = new NetworkPacket();
-                if (packet.Write(id, json))
+                if (packet.Write(netMessage))
                 {
                     stream.BeginWrite(packet.Bytes, 0, packet.Size, SendPacketCallback, null);
                 }
@@ -119,8 +133,15 @@ namespace Hawkeye.Client
 
             private void SendPacketCallback(IAsyncResult result)
             {
-                stream.EndWrite(result);
-                Debug.Log("[Client]: Sent packet to server");
+                stream.EndWrite(result);                
+            }
+
+            //---- Disconnect
+            //---------------
+            public void Disconnect()
+            {
+                stream.Close();
+                socket.Close();
             }
 
         } // end tcp

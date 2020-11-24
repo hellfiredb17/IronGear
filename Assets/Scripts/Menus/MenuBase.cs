@@ -4,7 +4,9 @@ public abstract class MenuBase : MonoBehaviour
 {
     //---- Interface
     //--------------
-    public abstract void Init();
+    public virtual void Init() 
+    {
+    }
 
     public virtual void Enter()
     {

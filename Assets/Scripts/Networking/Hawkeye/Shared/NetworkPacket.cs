@@ -13,15 +13,17 @@ namespace Hawkeye
     public class NetworkPacket
     {
         //---- Variables
-        //--------------
-        private int recipient;
+        //--------------        
         private int dataLength;
         private string message;
+        private string messageType;
         private List<byte> bytes;
 
         //---- Properties
         //---------------
         public string NetworkMessage => message;
+        public string MessageType => messageType;
+
         public Byte[] Bytes => bytes.ToArray();
         public int Size => bytes.Count;
 
@@ -35,8 +37,7 @@ namespace Hawkeye
         //---- Reset
         //----------
         public void Reset()
-        {
-            recipient = -1;
+        {            
             dataLength = 0;
             message = null;
             bytes.Clear();
@@ -44,20 +45,26 @@ namespace Hawkeye
 
         //---- Wrtie
         //----------
-        public bool Write(int id, string data)
+        public bool Write(NetMessage netMessage)
         {
             try
             {
                 Reset();
-                dataLength = data.Length;
+                
+                messageType = netMessage.GetType().ToString();
+                string json = JsonUtility.ToJson(netMessage);
+
+                dataLength = messageType.Length + json.Length;
 
                 // -- Order of data -- //
                 // Length of message
-                // Recipient id
+                // Length of type
+                // String of type
                 // Data in json/string format            
                 AppendInt(dataLength);
-                AppendInt(id);
-                AppendString(data);
+                AppendInt(messageType.Length);                
+                AppendString(messageType);
+                AppendString(json);
                 return true;
             }
             catch(Exception ex)
@@ -86,8 +93,9 @@ namespace Hawkeye
             try
             {
                 dataLength = ReadInt(0, data);
-                recipient = ReadInt(sizeof(int), data);
-                message = ReadString(sizeof(int) * 2, dataLength, data);                
+                int messageTypeSize = ReadInt(sizeof(int), data);
+                messageType = ReadString(sizeof(int) * 2, messageTypeSize, data);
+                message = ReadString(sizeof(int) * 2 + messageTypeSize, dataLength - messageTypeSize, data);
                 return true;
             }
             catch(Exception ex)

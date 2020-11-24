@@ -7,11 +7,21 @@ using UnityEngine;
 namespace Hawkeye.Server
 {
     public class Server
-    {   
+    {
+        //---- Delegate
+        //-------------
+        public delegate int GetNetworkId();
+
         //---- Variables
         //--------------
         private TcpListener listener;        
-        private Dictionary<int, ServerClient> clients;
+        private Dictionary<int, ServerClient> clients;        
+
+        //---- Events
+        //-----------
+        public Action<int> OnConnection;
+        public Action<string, string> OnProcessMessage;
+        public GetNetworkId GetId;
 
         //---- Properties
         //---------------
@@ -36,8 +46,6 @@ namespace Hawkeye.Server
             listener = new TcpListener(ipAddress, port);
             listener.Start();
 
-            Debug.Log($"[Server]: Open for connections on {ipAddress.ToString()}");
-
             // Open for connections
             listener.BeginAcceptTcpClient(new AsyncCallback(ServerAcceptClient), null);
         }
@@ -49,7 +57,7 @@ namespace Hawkeye.Server
             // Re-Open for connections
             listener.BeginAcceptTcpClient(new AsyncCallback(ServerAcceptClient), null);
 
-            Debug.Log($"[Server]: Incoming connection from {client.Client.RemoteEndPoint}...");
+            //Debug.Log($"[Server]: Incoming connection from {client.Client.RemoteEndPoint}...");
             if(clients.Count == SharedConsts.MAXCONNECTIONS)
             {
                 Debug.Log("[Server]: Failed to connect: Server full");
@@ -57,27 +65,30 @@ namespace Hawkeye.Server
             }
 
             // create connection
-            ServerClient tcpClient = new ServerClient(clients.Count);
+            int id = GetId == null ? clients.Count : GetId();
+            ServerClient tcpClient = new ServerClient(id);
             tcpClient.tcp.Connect(client);
-            // add to list
-            clients.Add(clients.Count, tcpClient);
+            tcpClient.tcp.OnProcessNetMessage = OnProcessMessage;
 
-            // send client configure information
-            Send(tcpClient.Id, new ClientConfigure(tcpClient.Id));
+            // add to list
+            clients.Add(id, tcpClient);
+
+            // send event
+            OnConnection?.Invoke(tcpClient.Id);
+        }
+
+        //---- Close
+        //----------
+        public void Close()
+        {            
+            listener.Stop();
         }
 
         //---- Send
         //---------
         public void Send(int id, NetMessage netMessage)
         {
-            // Parse message into json
-            string json = JsonUtility.ToJson(netMessage);
-            Send(id, json);
-        }
-
-        private void Send(int id, string netMessage)
-        {
-            if(!clients.ContainsKey(id))
+            if (!clients.ContainsKey(id))
             {
                 Debug.LogError($"[Server]: Does not contain key:{id} for client");
                 return;
@@ -89,14 +100,7 @@ namespace Hawkeye.Server
         //--------------
         public void Broadcast(NetMessage netMessage)
         {
-            // Parse message into json
-            string json = JsonUtility.ToJson(netMessage);
-            Broadcast(json);
-        }
-
-        private void Broadcast(string netMessage)
-        {
-            foreach(var client in clients)
+            foreach (var client in clients)
             {
                 client.Value.tcp.Send(netMessage);
             }

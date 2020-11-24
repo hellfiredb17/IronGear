@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Hawkeye;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -19,15 +20,18 @@ public class MainMenuManager : MonoBehaviour
     public MainMenu mainMenu;
     public HostMenu hostMenu;
     public JoinMenu joinMenu;
+    public LobbyMenu lobbyMenu;
 
     private MenuBase menu;
     private MainMenuState state;
 
     // host
+    private TCPServer server;
     private string gameName;
     private string hostName;
 
     // join
+    private TCPClient client;
     private string ipaddress;
     private string playerName;
 
@@ -75,6 +79,7 @@ public class MainMenuManager : MonoBehaviour
                 menu = joinMenu;
                 break;
             case MainMenuState.Lobby:
+                menu = lobbyMenu;
                 break;
         }
         menu.Enter();
@@ -116,6 +121,17 @@ public class MainMenuManager : MonoBehaviour
 
     private void OnStartLobby()
     {
+        // Create server
+        /*server = NetworkManager.CreateServer();
+        server.Open(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT);*/
+
+        // Create client
+        /*client = NetworkManager.CreateClient();
+        client.Connect(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT);*/
+
+        lobbyMenu.SetLocalPlayer(hostMenu.playerName.text);
+        lobbyMenu.SetHost(hostMenu.playerName.text, true);
+        lobbyMenu.SetLobby(hostMenu.gameName.text);
         SwitchState(MainMenuState.Lobby);
     }
 
@@ -136,12 +152,24 @@ public class MainMenuManager : MonoBehaviour
     //---------------
     private void LobbySetup()
     {
+        lobbyMenu.Init();
+        lobbyMenu.OnStart = OnStart;
+        lobbyMenu.OnReady = OnSendReady;
+        lobbyMenu.OnChat = OnSendChat;
+    }
+
+    private void OnStart()
+    {
 
     }
 
-    //---- Validation Error
-    //---------------------
+    private void OnSendReady(string player, bool ready)
+    {
 
-    //---- Error
-    //----------
+    }
+
+    private void OnSendChat(string player, string chat)
+    {
+
+    }
 }
