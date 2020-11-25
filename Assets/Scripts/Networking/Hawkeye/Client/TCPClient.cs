@@ -4,9 +4,20 @@ using Hawkeye.Client;
 
 public class TCPClient : MonoBehaviour
 {
+    //---- Static System
+    //------------------
+    public static TCPClient Client;
+
     //---- Variables
     //--------------
-    ClientGameState gameState;
+    public ClientGameState gameState;
+
+    //---- Awake
+    //----------
+    private void Awake()
+    {
+        Client = this;
+    }
 
     //---- Update
     //-----------
@@ -17,7 +28,7 @@ public class TCPClient : MonoBehaviour
 
     private void KeyboardInput()
     {
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             if (gameState == null)
             {
@@ -26,17 +37,24 @@ public class TCPClient : MonoBehaviour
             // TODO - remove game state
         }
 
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             // try to connect
             gameState.Connect(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT);
         }
 
-        if (Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             // try to connect
             NetObject connection = gameState.FindObject<NetObject>();
-            gameState.Send(new CreateLobby("Editor lobby", connection.NetId, 4));
+            gameState.Send(new GetLobbyList(connection.NetId));
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            // try to connect
+            NetObject connection = gameState.FindObject<NetObject>();
+            gameState.Send(new ConnectToLobby(1, connection.NetId, "Client"));
         }
     }
 }

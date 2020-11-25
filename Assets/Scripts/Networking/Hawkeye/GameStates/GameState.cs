@@ -22,6 +22,7 @@ namespace Hawkeye
 
         //---- Variables
         //--------------
+        protected MenuManager menuManager;
         protected Dictionary<int, NetObject> netObjects;
         protected State state;
 
@@ -30,6 +31,7 @@ namespace Hawkeye
         public GameState()
         {
             netObjects = new Dictionary<int, NetObject>();
+            menuManager = MenuManager.UIManager;
         }
 
         //---- State Change
@@ -53,14 +55,25 @@ namespace Hawkeye
             netmessage.Process(this);
         }
 
+        public void ProcessDirectMessage(NetMessage netMessage)
+        {
+            netMessage.Process(this);
+        }
+
+        //---- Messages
+        //-------------
+        public void DirectMessage(NetMessage netMessage)
+        {
+            ProcessDirectMessage(netMessage);
+        }
+
         //---- NetObject
         //--------------
         public T GetNetObject<T>(int id) where T : NetObject
         {
             NetObject netObject;
             if(!netObjects.TryGetValue(id, out netObject))
-            {
-                Debug.LogError($"Cannot find netobject {id}");
+            {                
                 return null;
             }
             return netObject as T;

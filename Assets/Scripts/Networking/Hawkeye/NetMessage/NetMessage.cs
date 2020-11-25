@@ -20,6 +20,7 @@ namespace Hawkeye
             { typeof(SendLobbyChat).ToString(), typeof(SendLobbyChat) },
             { typeof(SendLobbyList).ToString(), typeof(SendLobbyList) },
             { typeof(SendLobbyState).ToString(), typeof(SendLobbyState) },
+            { typeof(SendLobby).ToString(), typeof(SendLobby) },
         };
 
         public abstract void Process(GameState gameState);

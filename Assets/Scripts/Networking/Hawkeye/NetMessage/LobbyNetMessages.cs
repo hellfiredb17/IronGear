@@ -11,15 +11,15 @@ namespace Hawkeye
         //--------------
         public string LobbyName;
         public int MaxPlayers;
-        public int HostId;
+        public int ConfirmId;
 
         //---- Ctor
         //---------
-        public CreateLobby(string name, int host, int max)
+        public CreateLobby(string name, int max, int confirm = -1)
         {
-            LobbyName = name;
-            HostId = host;
+            LobbyName = name;            
             MaxPlayers = max;
+            ConfirmId = confirm;
         }
 
         public override void Process(GameState gameState)
@@ -28,13 +28,16 @@ namespace Hawkeye
             ServerGameState serverState = gameState as ServerGameState;
 
             // Creates a new lobby adds it to netobjects
-            LobbyNetObject lobby = new LobbyNetObject(serverState.GetNetWorkId(), LobbyName, HostId);
+            LobbyNetObject lobby = new LobbyNetObject(serverState.GetNetWorkId(), LobbyName, MaxPlayers);
             serverState.Add(lobby);
 
             serverState.Log($"Lobby {LobbyName} created");
 
-            // send lobby state down to client
-            serverState.Send(HostId, new SendLobbyState(new LobbyState(lobby.NetId, LobbyName, MaxPlayers, 0)));
+            if(ConfirmId > -1)
+            {
+                serverState.Send(ConfirmId, new SendLobbyState(
+                    new LobbyState(lobby.NetId, lobby.Name, lobby.MaxPlayers, lobby.players.Count)));
+            }
         }
     }
 
@@ -55,6 +58,7 @@ namespace Hawkeye
         {            
             // Get server game state
             ServerGameState serverState = gameState as ServerGameState;
+
             // Get lobby list
             List<LobbyNetObject> lobbies = serverState.FindAllObjects<LobbyNetObject>();
             if(lobbies.Count == 0)
@@ -68,7 +72,10 @@ namespace Hawkeye
             List<LobbyState> lobbyStates = new List<LobbyState>(lobbies.Count);
             for(int i = 0; i < lobbies.Count; i++)
             {
-                lobbyStates.Add(new LobbyState(lobbies[i].NetId, lobbies[i].Name, lobbies[i].MaxPlayers, lobbies[i].players.Count));
+                lobbyStates.Add(new LobbyState(lobbies[i].NetId, 
+                    lobbies[i].Name, 
+                    lobbies[i].MaxPlayers, 
+                    lobbies[i].players != null ? lobbies[i].players.Count : 0));
             }
 
             // Send list back to client
@@ -80,9 +87,9 @@ namespace Hawkeye
     {
         //---- Variables
         //--------------
-        string PlayerName;
-        int LobbyId;
-        int PlayerId;       
+        public string PlayerName;
+        public int LobbyId;
+        public int PlayerId;       
         
         //---- Ctor
         //---------
@@ -97,6 +104,23 @@ namespace Hawkeye
         {
             // Get server game state
             ServerGameState serverState = gameState as ServerGameState;
+            // Create lobby player
+            LobbyPlayer player = new LobbyPlayer(PlayerId, PlayerName, false);
+            // Get lobby then add player
+            LobbyNetObject lobby = serverState.GetNetObject<LobbyNetObject>(LobbyId);
+            if(lobby == null)
+            {
+                serverState.Log($"Unable to find Lobby:{LobbyId}");
+                return;
+            }
+            lobby.PlayerJoin(player);
+
+            // Update all connected players to lobby
+            List<int> players = lobby.PlayerIds;
+            for(int i = 0; i < players.Count; i++)
+            {
+                serverState.Send(players[i], new SendLobby(lobby));
+            }
         }
     }
 
@@ -142,7 +166,8 @@ namespace Hawkeye
 
         public override void Process(GameState gameState)
         {
-            // TODO
+            ClientGameState clientState = gameState as ClientGameState;
+            clientState.Log($"Lobby Count: {Lobbies.Count}");
         }
     }
 
@@ -162,7 +187,43 @@ namespace Hawkeye
         public override void Process(GameState gameState)
         {
             ClientGameState clientState = gameState as ClientGameState;
-            clientState.Log($"TODO = LobbyState ID:{LobbyState.Id} Name:{LobbyState.Name} Max:{LobbyState.MaxPlayers} Current:{LobbyState.CurrentPlayers}");
+
+            LobbyNetObject lobby = clientState.GetNetObject<LobbyNetObject>(LobbyState.Id);
+            if(lobby == null)
+            {
+                lobby = new LobbyNetObject(LobbyState.Id, LobbyState.Name, LobbyState.MaxPlayers);
+                lobby.MaxPlayers = LobbyState.MaxPlayers;
+                clientState.Add(lobby);
+            }
+            clientState.Log($"LobbyState ID:{LobbyState.Id} Name:{LobbyState.Name} Max:{LobbyState.MaxPlayers} Current:{LobbyState.CurrentPlayers}");
+        }
+    }
+
+    public class SendLobby : NetMessage
+    {
+        //---- Variables
+        //--------------
+        public string LobbyName;
+        public List<LobbyPlayer> Players;
+        public int LobbyId;
+        public int MaxPlayers;
+        public List<LobbyChatHistory> ChatHistory;
+
+        //---- Ctor
+        //---------
+        public SendLobby(LobbyNetObject lobby)
+        {
+            LobbyId = lobby.NetId;
+            LobbyName = lobby.Name;
+            Players = lobby.Players;
+            MaxPlayers = lobby.MaxPlayers;
+            ChatHistory = lobby.chatHistory;
+        }
+
+        public override void Process(GameState gameState)
+        {
+            ClientGameState clientState = gameState as ClientGameState;
+            clientState.Log($"Lobby ID:{LobbyId} Name:{LobbyName} Current Players:{(Players != null ? Players.Count : 0)}/{MaxPlayers}");
         }
     }
 

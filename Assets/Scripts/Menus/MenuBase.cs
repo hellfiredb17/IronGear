@@ -2,8 +2,18 @@
 
 public abstract class MenuBase : MonoBehaviour
 {
+    //---- Variable
+    //-------------
+    protected MenuManager menuManager;
+
     //---- Interface
     //--------------
+    protected virtual void Start()
+    {
+        menuManager = MenuManager.UIManager;
+        Init();
+    }
+
     public virtual void Init() 
     {
     }

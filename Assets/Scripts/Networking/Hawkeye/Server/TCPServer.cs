@@ -3,15 +3,26 @@ using Hawkeye;
 
 public class TCPServer : MonoBehaviour
 {
+    //---- Static System
+    //------------------
+    public static TCPServer Server;
+
     //---- Variables
     //--------------
-    private ServerGameState gameState;
+    public ServerGameState gameState;
+
+    //---- Awake
+    //----------
+    private void Awake()
+    {
+        Server = this;
+    }
 
     //---- Update
     //-----------
     private void Update()
     {
-        KeyboardInput();
+        //KeyboardInput();
     }
 
     private void KeyboardInput()

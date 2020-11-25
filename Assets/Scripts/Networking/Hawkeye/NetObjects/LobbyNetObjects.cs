@@ -9,34 +9,39 @@ namespace Hawkeye
     public class LobbyNetObject : NetObject
     {
         public string Name;
-        public int MaxPlayers;
-        public int HostId;
-        public Dictionary<int, LobbyPlayerNetObject> players;
+        public int MaxPlayers;        
+        public Dictionary<int, LobbyPlayer> players;
         public List<LobbyChatHistory> chatHistory;
 
         //---- Ctor
         //---------
-        public LobbyNetObject(int id, string name, int host) : base(id)
+        public LobbyNetObject(int id, string name, int maxPlayers) : base(id)
         {            
             Name = name;
-            HostId = host;
+            MaxPlayers = maxPlayers;
+
+            players = new Dictionary<int, LobbyPlayer>();
+            chatHistory = new List<LobbyChatHistory>();
         }
 
         //---- Player
         //-----------
-        public void PlayerJoin(LobbyPlayerNetObject player)
+        public List<LobbyPlayer> Players => new List<LobbyPlayer>(players.Values);
+        public List<int> PlayerIds => new List<int>(players.Keys);
+
+        public void PlayerJoin(LobbyPlayer player)
         {
-            if (players.ContainsKey(player.NetId))
+            if (players.ContainsKey(player.Id))
             {
-                Debug.LogError($"[Lobby]: Player {player.NetId}:{player.Name} already entered");
+                Debug.LogError($"[Lobby]: Player {player.Id}:{player.Name} already entered");
                 return;
             }
-            players.Add(player.NetId, player);
+            players.Add(player.Id, player);
         }
 
         public void PlayerReady(int id, bool ready)
         {
-            LobbyPlayerNetObject player;
+            LobbyPlayer player;
             if (!players.TryGetValue(id, out player))
             {
                 Debug.LogError($"[Lobby]: Player {id} not found");
@@ -54,25 +59,13 @@ namespace Hawkeye
         //---------
         public void AddChat(int id, string chat)
         {
-            LobbyPlayerNetObject player;
+            LobbyPlayer player;
             if (!players.TryGetValue(id, out player))
             {
                 Debug.LogError($"[Lobby]: Player {id} not found");
                 return;
             }
             chatHistory.Add(new LobbyChatHistory(id, player.Name, chat));
-        }
-    }
-
-    public class LobbyPlayerNetObject : NetObject
-    {
-        public string Name;
-        public bool Ready;
-
-        public LobbyPlayerNetObject(int id, string name, bool ready) : base(id)
-        {            
-            Name = name;
-            Ready = ready;
         }
     }
     
@@ -95,6 +88,21 @@ namespace Hawkeye
         }
     }
 
+    [System.Serializable]
+    public class LobbyPlayer
+    {
+        public int Id;
+        public string Name;
+        public bool Ready;
+        public LobbyPlayer(int id, string name, bool ready)
+        {
+            Id = id;
+            Name = name;
+            Ready = ready;
+        }
+    }
+
+    [System.Serializable]
     public class LobbyChatHistory
     {
         public string PlayerName;

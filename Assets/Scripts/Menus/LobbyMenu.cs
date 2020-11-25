@@ -18,7 +18,7 @@ public class LobbyMenu : MenuBase
 
     [Header("Labels")]
     public TextMeshProUGUI title;
-    public TextMeshProUGUI host;
+    public TextMeshProUGUI playerCount;
     public TextMeshProUGUI players;
     public TextMeshProUGUI chat;
     public Text buttonText;
@@ -27,15 +27,10 @@ public class LobbyMenu : MenuBase
     private StringBuilder sbPlayers;
     private Dictionary<string, bool> playerList;
     private Queue<string> chatQueue;
-
-    private string localPlayer;    
+    
+    private int maxCount;
+    private bool bHost;
     private bool bReady;
-
-    //---- Events
-    //-----------
-    public Action OnStart;
-    public Action<string, bool> OnReady;
-    public Action<string, string> OnChat;
 
     //---- Interface
     //--------------
@@ -59,52 +54,49 @@ public class LobbyMenu : MenuBase
 
         players.text = string.Empty;
         chat.text = string.Empty;
-
-        localPlayer = string.Empty;
     }
 
     //---- Event Actions
     //------------------
     private void OnStartGame()
-    {
-        OnStart?.Invoke();
+    {        
     }
 
     private void OnToggleReady()
     {
-        bReady = !bReady;
-        OnReady?.Invoke(localPlayer, bReady);
+        bReady = !bReady;        
         buttonText.text = bReady ? "UNREADY" : "READY";
     }
 
     private void OnSendChat()
     {
         string chat = chatInput.text;
-        chatInput.text = string.Empty;
-        OnChat?.Invoke(localPlayer, chat);
+        chatInput.text = string.Empty;        
     }
 
-    //---- Lobby Name
-    //---------------
+    //---- Setters
+    //------------
     public void SetLobby(string lobby)
     {
-        title.text = $"LOBBY - {lobby}";
+        title.text = $"[LOBBY]: {lobby}";
     }
 
-    //---- Host
-    //---------
-    public void SetHost(string name, bool isHost)
+    public void SetPlayerCount(int current, int max)
     {
-        host.text = name;        
-        bReady = isHost;
-        buttonText.text = isHost ? "START" : "READY";
-        if(isHost)
-        {
-            actionButton.onClick.AddListener(OnStartGame);
+        maxCount = max;
+        playerCount.text = $"{current}/{max}";
+    }
+
+    public void SetHost(bool value)
+    {
+        bHost = value;
+        if(bHost)
+        {            
+            actionButton.gameObject.SetActive(false);
         }
         else
         {
-            actionButton.onClick.AddListener(OnToggleReady);
+            actionButton.gameObject.SetActive(true);
         }
     }
 
@@ -112,10 +104,10 @@ public class LobbyMenu : MenuBase
     //---------
     public void AddChat(string player, string chat)
     {
-        string color = localPlayer == player ? "green" : "red";
+        /*string color = localPlayer == player ? "green" : "red";
         string line = $"<color={color}>[{player}]: {chat}</color>";
         chatQueue.Enqueue(line);
-        UpdateChat();
+        UpdateChat();*/
     }
 
     private void UpdateChat()
@@ -130,11 +122,6 @@ public class LobbyMenu : MenuBase
 
     //---- Player
     //-----------
-    public void SetLocalPlayer(string player)
-    {
-        localPlayer = player;
-    }
-
     public void AddPlayer(string player)
     {
         if(playerList.ContainsKey(player))

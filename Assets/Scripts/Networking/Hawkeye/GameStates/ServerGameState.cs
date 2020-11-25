@@ -18,7 +18,7 @@ namespace Hawkeye
             server = new Server.Server();
             server.GetId = GetNetWorkId;
             server.OnConnection = OnConnection;
-            server.OnProcessMessage = ProcessNetMessage;
+            server.OnProcessMessage = ProcessNetMessage;            
             Log("Game state created");
         }
 

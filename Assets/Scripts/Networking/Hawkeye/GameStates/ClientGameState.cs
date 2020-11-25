@@ -13,7 +13,7 @@ namespace Hawkeye
         public ClientGameState()
         {
             client = new Client.Client();
-            client.tcp.OnProcessNetMessage = ProcessNetMessage;
+            client.tcp.OnProcessNetMessage = ProcessNetMessage;            
             Log("Game state created");
         }
 

@@ -19,8 +19,9 @@ namespace Hawkeye.Server
 
         //---- Events
         //-----------
-        public Action<int> OnConnection;
+        public Action<int> OnConnection;        
         public Action<string, string> OnProcessMessage;
+
         public GetNetworkId GetId;
 
         //---- Properties
