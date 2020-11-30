@@ -6,6 +6,7 @@ namespace Hawkeye
 {
     //---------- Lobby Classes ----------
     //-----------------------------------
+    [System.Serializable]
     public class LobbyNetObject : NetObject
     {
         public string Name;

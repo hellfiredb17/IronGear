@@ -29,7 +29,7 @@ public class HostMenu : MenuBase
     public Button CreateButton;
 
     TCPServer server;
-    private Error errorState;
+    private Error errorState;    
 
     //---- Interface
     //--------------
@@ -45,13 +45,53 @@ public class HostMenu : MenuBase
 
     public override void Enter()
     {
+        if (server == null)
+        {
+            server = TCPServer.Server;
+            if (server.gameState == null)
+            {
+                server.gameState = new ServerGameState();
+            }
+        }        
+
         IpAddress.text = SharedConsts.LOCAL_IPADDRESS;
         Port.text = SharedConsts.PORT.ToString();
+
         LobbyName.text = string.Empty;
         MaxPlayers.text = string.Empty;
+
         errorState = (Error.Name | Error.Players);        
         UpdateButtonState();
         base.Enter();
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+    }
+
+    //---- Action Callbacks
+    //---------------------
+    private void OnOpenConnection()
+    {
+        CreateLobby();
+    }
+
+    private void CreateLobby()
+    {
+        // create lobby
+        server.gameState.DirectMessage(new CreateLobby(LobbyName.text, int.Parse(MaxPlayers.text)));
+
+        /*
+        // setup lobby before entering lobby
+        LobbyMenu lobby = menuManager.GetMenu<LobbyMenu>(MenuManager.State.Lobby);
+        lobby.SetLobby(LobbyName.text);
+        lobby.SetPlayerCount(0, int.Parse(MaxPlayers.text));
+        lobby.SetHost(true);
+        */
+
+        // goto lobby
+        menuManager.Show(MenuManager.State.Lobby);
     }
 
     //---- Actions
@@ -59,26 +99,9 @@ public class HostMenu : MenuBase
     private void OnCreatePress()
     {
         CreateButton.gameObject.SetActive(false);
-
-        server = TCPServer.Server;
-        if(server.gameState == null)
-        {
-            server.gameState = new ServerGameState();
-        }
+        
         // open connection
-        server.gameState.Open(IpAddress.text, int.Parse(Port.text));
-
-        // create lobby
-        server.gameState.DirectMessage(new CreateLobby(LobbyName.text, int.Parse(MaxPlayers.text)));
-
-        // setup lobby before entering lobby
-        LobbyMenu lobby = menuManager.GetMenu<LobbyMenu>(MenuManager.State.Lobby);
-        lobby.SetLobby(LobbyName.text);
-        lobby.SetPlayerCount(0, int.Parse(MaxPlayers.text));
-        lobby.SetHost(true);
-
-        // goto lobby
-        menuManager.Show(MenuManager.State.Lobby);
+        server.gameState.Open(IpAddress.text, int.Parse(Port.text), OnOpenConnection);
     }
 
     private void ValidateName(string text)

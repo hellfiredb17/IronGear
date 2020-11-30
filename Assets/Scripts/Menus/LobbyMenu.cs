@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Hawkeye;
 
-public class LobbyMenu : MenuBase
+public class LobbyHostMenu : MenuBase
 {
     //---- Variables
     //--------------
@@ -23,10 +22,11 @@ public class LobbyMenu : MenuBase
     public TextMeshProUGUI chat;
     public Text buttonText;
 
+    private TCPServer server;
+    private LobbyNetObject lobby;
+
     private StringBuilder sbChat;
     private StringBuilder sbPlayers;
-    private Dictionary<string, bool> playerList;
-    private Queue<string> chatQueue;
     
     private int maxCount;
     private bool bHost;
@@ -38,19 +38,31 @@ public class LobbyMenu : MenuBase
     {
         sbChat = new StringBuilder();
         sbPlayers = new StringBuilder();
-        playerList = new Dictionary<string, bool>();
-        chatQueue = new Queue<string>();
-
         sendButton.onClick.AddListener(OnSendChat);
+    }
+
+    public override void Enter()
+    {
+        if(server == null)
+        {
+            server = TCPServer.Server;
+        }
+
+        lobby = server.gameState.FindObject<LobbyNetObject>();
+        if(lobby == null)
+        {
+            Debug.LogError("Unable to find lobby net object");
+        }
+        UpdateUI();
+        base.Enter();
     }
 
     public override void Exit()
     {
         base.Exit();
+        lobby = null;
         sbChat.Clear();
-        sbPlayers.Clear();
-        playerList.Clear();
-        chatQueue.Clear();
+        sbPlayers.Clear();       
 
         players.text = string.Empty;
         chat.text = string.Empty;
@@ -74,9 +86,41 @@ public class LobbyMenu : MenuBase
         chatInput.text = string.Empty;        
     }
 
+    //---- Update UI
+    //--------------
+    public void UpdateUI()
+    {
+        SetLobbyName(lobby.Name);
+        SetPlayerCount(lobby.players.Count, lobby.MaxPlayers);
+        UpdatePlayerList();
+        UpdateChat();
+    }
+    
+    private void UpdatePlayerList()
+    {
+        sbPlayers.Clear();
+        foreach(var player in lobby.players)
+        {
+            string color = player.Value.Ready ? "green" : "red";
+            sbPlayers.AppendLine($"<color={color}>{player.Value.Name}</color>");
+        }
+        players.text = sbPlayers.ToString();
+    }
+
+    private void UpdateChat()
+    {
+        sbChat.Clear();
+        for(int i = 0; i < lobby.chatHistory.Count; i++)
+        {
+            LobbyChatHistory chat = lobby.chatHistory[i];
+            sbChat.AppendLine($"[{chat.PlayerName}]:{chat.Chat}");
+        }
+        chat.text = sbChat.ToString();
+    }
+
     //---- Setters
     //------------
-    public void SetLobby(string lobby)
+    public void SetLobbyName(string lobby)
     {
         title.text = $"[LOBBY]: {lobby}";
     }
@@ -85,73 +129,5 @@ public class LobbyMenu : MenuBase
     {
         maxCount = max;
         playerCount.text = $"{current}/{max}";
-    }
-
-    public void SetHost(bool value)
-    {
-        bHost = value;
-        if(bHost)
-        {            
-            actionButton.gameObject.SetActive(false);
-        }
-        else
-        {
-            actionButton.gameObject.SetActive(true);
-        }
-    }
-
-    //---- Chat
-    //---------
-    public void AddChat(string player, string chat)
-    {
-        /*string color = localPlayer == player ? "green" : "red";
-        string line = $"<color={color}>[{player}]: {chat}</color>";
-        chatQueue.Enqueue(line);
-        UpdateChat();*/
-    }
-
-    private void UpdateChat()
-    {
-        sbChat.Clear();
-        foreach(var chat in chatQueue)
-        {
-            sbChat.AppendLine(chat);
-        }
-        chat.text = sbChat.ToString();
-    }
-
-    //---- Player
-    //-----------
-    public void AddPlayer(string player)
-    {
-        if(playerList.ContainsKey(player))
-        {
-            return;
-        }
-        playerList.Add(player, false);
-        UpdatePlayerList();
-    }
-
-    public void RemovePlayer(string player)
-    {
-        playerList.Remove(player);
-        UpdatePlayerList();
-    }
-
-    public void TogglePlayerReady(string player)
-    {
-        playerList[player] = !playerList[player];
-        UpdatePlayerList();
-    }
-
-    private void UpdatePlayerList()
-    {
-        sbPlayers.Clear();
-        foreach(var player in playerList)
-        {
-            string color = player.Value ? "green" : "yellow";
-            sbPlayers.AppendLine($"<color={color}>{player.Key}</color>");
-        }
-        players.text = sbPlayers.ToString();
     }
 }

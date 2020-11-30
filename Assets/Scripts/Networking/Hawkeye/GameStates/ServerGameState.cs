@@ -1,13 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace Hawkeye
 {
     public class ServerGameState : GameState
     {
         //---- Variables
-        //--------------
+        //--------------        
         private Server.Server server;
         private int networkId;
 
@@ -24,8 +25,9 @@ namespace Hawkeye
 
         //---- Connection
         //---------------
-        public void Open(string ipaddress, int port)
+        public void Open(string ipaddress, int port, Action onConnected = null)
         {
+            server.OnConnectionOpen = onConnected;
             server.Open(ipaddress, port);
             Log($"Open connections on {ipaddress}:{port}");
         }

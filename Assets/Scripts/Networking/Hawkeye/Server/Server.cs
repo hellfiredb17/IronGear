@@ -15,13 +15,15 @@ namespace Hawkeye.Server
         //---- Variables
         //--------------
         private TcpListener listener;        
-        private Dictionary<int, ServerClient> clients;        
+        private Dictionary<int, ServerClient> clients;
 
         //---- Events
         //-----------
-        public Action<int> OnConnection;        
+        public Action OnConnectionOpen;
+        public Action OnConnectionClose;
+        public Action<int> OnConnection;
+        public Action<int> OnDisconnect;
         public Action<string, string> OnProcessMessage;
-
         public GetNetworkId GetId;
 
         //---- Properties
@@ -46,6 +48,10 @@ namespace Hawkeye.Server
         {            
             listener = new TcpListener(ipAddress, port);
             listener.Start();
+
+            // send event
+            OnConnectionOpen?.Invoke();
+            OnConnection = null;
 
             // Open for connections
             listener.BeginAcceptTcpClient(new AsyncCallback(ServerAcceptClient), null);
@@ -83,6 +89,8 @@ namespace Hawkeye.Server
         public void Close()
         {            
             listener.Stop();
+            // send event
+            OnConnectionClose?.Invoke();
         }
 
         //---- Send

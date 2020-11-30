@@ -42,7 +42,7 @@ public class MenuManager : MonoBehaviour
     public HostJoinMenu hostJoinMenu;
     public HostMenu hostMenu;
     public JoinMenu joinMenu;
-    public LobbyMenu lobbyMenu;
+    public LobbyHostMenu lobbyMenu;
 
     [Header("Modals")]
 
