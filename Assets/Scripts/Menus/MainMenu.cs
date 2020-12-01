@@ -19,6 +19,6 @@ public class MainMenu : MenuBase
     //-----------
     private void OnStartPress()
     {
-        menuManager.Show(MenuManager.State.HostJoin);
+        menuManager.Show(MenuManager.Menu.HostJoin);
     }
 }

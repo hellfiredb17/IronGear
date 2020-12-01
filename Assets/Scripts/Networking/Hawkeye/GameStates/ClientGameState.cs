@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 namespace Hawkeye
 {
@@ -17,12 +18,16 @@ namespace Hawkeye
             Log("Game state created");
         }
 
+        //---- Properties
+        //---------------
+        public int NetId => client.Id;
+        
         //---- Connections
         //----------------
-        public void Connect(string ipaddress, int port)
+        public void Connect(string ipaddress, int port, Action onConnect = null)
         {
             Log($"Try connection to {ipaddress}:{port}");
-            client.ConnectToServer(ipaddress, port);
+            client.ConnectToServer(ipaddress, port, onConnect);
         }
 
         public void Disconnect()
@@ -42,6 +47,11 @@ namespace Hawkeye
         public void Log(string log)
         {
             Debug.Log($"<color=green>[Client]: {log}</color>");
+        }
+
+        public void LogError(string log)
+        {
+            Debug.LogError($"[Client]: {log}");
         }
     }
 }

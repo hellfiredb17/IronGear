@@ -40,7 +40,7 @@ public class TCPClient : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             // try to connect
-            gameState.Connect(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT);
+            gameState.Connect(SharedConsts.LOCAL_IPADDRESS, SharedConsts.PORT, OnConnection);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
@@ -56,5 +56,10 @@ public class TCPClient : MonoBehaviour
             NetObject connection = gameState.FindObject<NetObject>();
             gameState.Send(new ConnectToLobby(1, connection.NetId, "Client"));
         }
+    }
+
+    private void OnConnection()
+    {
+        gameState.Log("Connected to server");
     }
 }

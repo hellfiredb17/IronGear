@@ -12,15 +12,19 @@ public class MenuManager : MonoBehaviour
 
     //---- Menu States
     //----------------
-    public enum State
+    public enum Menu
     {
-        None,
+        // Shared
+        None = 0,
         Main,
         HostJoin,
-        HostSetup,
-        LobbyList,
-        Lobby,
-        Game
+        Game,
+        // Host
+        HostSetup = 100,        
+        LobbyHost,
+        // Client
+        ClientSetup = 200,
+        LobbyClient,
     }
 
     [Flags]
@@ -40,18 +44,23 @@ public class MenuManager : MonoBehaviour
     [Header("Menus")]
     public MainMenu mainMenu;
     public HostJoinMenu hostJoinMenu;
+
+    [Header("Server Menus")]
     public HostMenu hostMenu;
-    public JoinMenu joinMenu;
-    public LobbyHostMenu lobbyMenu;
+    public LobbyHostMenu lobbyHostMenu;
+
+    [Header("Client Menus")]
+    public ClientMenu clientMenu;
+    public LobbyClientMenu lobbyClientMenu;
 
     [Header("Modals")]
 
     private MenuBase currentMenu;
-    private State current;
+    private Menu current;
 
     //---- Properties
     //---------------
-    public State Current => current;
+    public Menu Current => current;
 
     //---- Awake / Start
     //------------------
@@ -62,12 +71,16 @@ public class MenuManager : MonoBehaviour
 
     public void Start()
     {
-        Show(State.Main);
+        // better way to do this but for now
+        lobbyHostMenu.Init();
+        lobbyClientMenu.Init();
+
+        Show(Menu.Main);
     }
 
     //---- Menu Interface
     //-------------------
-    public void Show(State menu)
+    public void Show(Menu menu)
     {
         if(current == menu)
         {
@@ -85,23 +98,28 @@ public class MenuManager : MonoBehaviour
         current = menu;
         switch(current)
         {
-            case State.None:
+            case Menu.None:
                 currentMenu = null;
                 return;
-            case State.Main:
+            case Menu.Main:
                 currentMenu = mainMenu;
-                break;
-            case State.HostJoin:
+                break;            
+            case Menu.HostJoin:
                 currentMenu = hostJoinMenu;
                 break;
-            case State.HostSetup:
+            // Host
+            case Menu.HostSetup:
                 currentMenu = hostMenu;
                 break;
-            case State.LobbyList:
-                currentMenu = joinMenu;
+            case Menu.LobbyHost:
+                currentMenu = lobbyHostMenu;
                 break;
-            case State.Lobby:
-                currentMenu = lobbyMenu;
+            // Client
+            case Menu.ClientSetup:
+                currentMenu = clientMenu;
+                break;
+            case Menu.LobbyClient:
+                currentMenu = lobbyClientMenu;
                 break;
         }
 
@@ -111,13 +129,13 @@ public class MenuManager : MonoBehaviour
 
     public void Hide()
     {
-        if(current == State.None || currentMenu == null)
+        if(current == Menu.None || currentMenu == null)
         {
             return;
         }
         currentMenu.Exit();
         currentMenu = null;
-        current = State.None;
+        current = Menu.None;
     }
 
     public T GetCurrentMenu<T>() where T : MenuBase
@@ -125,20 +143,27 @@ public class MenuManager : MonoBehaviour
         return currentMenu as T;
     }
 
-    public T GetMenu<T>(State menu) where T : MenuBase
+    public T GetMenu<T>(Menu menu) where T : MenuBase
     {
         switch (menu)
         {            
-            case State.Main:
+            // Shared
+            case Menu.Main:
                 return mainMenu as T;                
-            case State.HostJoin:
+            case Menu.HostJoin:
                 return hostJoinMenu as T;
-            case State.HostSetup:
-                return hostMenu as T;                
-            case State.LobbyList:
-                return joinMenu as T;
-            case State.Lobby:
-                return lobbyMenu as T;
+            case Menu.Game:
+                return null;
+            // Host
+            case Menu.HostSetup:
+                return hostMenu as T;
+            case Menu.LobbyHost:
+                return lobbyHostMenu as T;
+            // Client
+            case Menu.ClientSetup:
+                return clientMenu as T;
+            case Menu.LobbyClient:
+                return lobbyClientMenu as T;
         }
         return null;
     }

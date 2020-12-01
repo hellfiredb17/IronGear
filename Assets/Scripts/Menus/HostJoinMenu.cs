@@ -21,11 +21,11 @@ public class HostJoinMenu : MenuBase
     //------------
     private void OnHostPress()
     {
-        menuManager.Show(MenuManager.State.HostSetup);
+        menuManager.Show(MenuManager.Menu.HostSetup);
     }
 
     private void OnJoinPress()
     {
-        menuManager.Show(MenuManager.State.LobbyList);
+        menuManager.Show(MenuManager.Menu.ClientSetup);
     }
 }

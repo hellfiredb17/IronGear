@@ -25,6 +25,18 @@ namespace Hawkeye
             chatHistory = new List<LobbyChatHistory>();
         }
 
+        public LobbyNetObject(int id, string name, int maxPlayers, List<LobbyPlayer> players, List<LobbyChatHistory> chat) : base(id)
+        {
+            Name = name;
+            MaxPlayers = maxPlayers;
+            this.players = new Dictionary<int, LobbyPlayer>(players.Count);
+            for(int i = 0; i < players.Count; i++)
+            {
+                this.players.Add(players[i].Id, players[i]);
+            }            
+            chatHistory = chat;
+        }
+
         //---- Player
         //-----------
         public List<LobbyPlayer> Players => new List<LobbyPlayer>(players.Values);

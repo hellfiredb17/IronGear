@@ -1,6 +1,5 @@
-﻿#if CLIENT
-using UnityEngine;
-#endif
+﻿using UnityEngine;
+
 namespace HexWorld
 {
     //---- Vector 2
@@ -54,7 +53,6 @@ namespace HexWorld
         }
     }
 
-#if CLIENT
     //---- Extensions
     //---------------
     public static class PointExtensions
@@ -79,5 +77,4 @@ namespace HexWorld
             return new Point3(pt.x, pt.y, pt.z);
         }
     }
-#endif
 } // end namespace

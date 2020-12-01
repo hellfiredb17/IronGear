@@ -115,36 +115,57 @@ namespace Hawkeye
             }
             lobby.PlayerJoin(player);
 
-            // Update all connected players to lobby
+            // Send lobby information to player that joined
+            serverState.Send(PlayerId, new SendLobby(lobby));
+
+            // Update all connected players that new player joined
             List<int> players = lobby.PlayerIds;
             for(int i = 0; i < players.Count; i++)
             {
-                serverState.Send(players[i], new SendLobby(lobby));
+                if(players[i] == PlayerId)
+                {
+                    continue;
+                }
+                serverState.Send(players[i], new UpdateLobby());
             }
         }
     }
 
-    public class SendLobbyChat : NetMessage
+    public class SendChat : NetMessage
     {
         //---- Variables
         //--------------        
-        public int LobbyId;
-        public int PlayerId;
-        public string ChatMessage;
+        public int PlayerID;
+        public string Text;
 
         //---- Ctor
         //---------
-        public SendLobbyChat(int lobby, int player, string chat)
+        public SendChat(int id, string text)
         {
-            LobbyId = lobby;
-            PlayerId = player;
-            ChatMessage = chat;
+            PlayerID = id;
+            Text = text;
         }
 
         public override void Process(GameState gameState)
         {
             // Get server game state
             ServerGameState serverState = gameState as ServerGameState;
+
+            if(serverState.CurrentState != GameState.State.Lobby)
+            {
+                serverState.Log("Getting lobby messages when not in lobby state");
+                return;
+            }
+
+            // Get lobby net object
+            LobbyNetObject lobbyNetObject = serverState.FindObject<LobbyNetObject>();
+            lobbyNetObject.AddChat(PlayerID, Text);
+
+            // Update the UI to show new message
+            LobbyHostMenu lobby = serverState.Menus.GetMenu<LobbyHostMenu>(MenuManager.Menu.LobbyHost);
+            lobby.UpdateUI();
+
+            // TODO - send all players connected to update UI
         }
     }
 
@@ -168,6 +189,11 @@ namespace Hawkeye
         {
             ClientGameState clientState = gameState as ClientGameState;
             clientState.Log($"Lobby Count: {Lobbies.Count}");
+            if(clientState.Menus.Current == MenuManager.Menu.ClientSetup)
+            {
+                ClientMenu menu = clientState.Menus.GetMenu<ClientMenu>(MenuManager.Menu.ClientSetup);
+                menu.LobbyLists(Lobbies);
+            }
         }
     }
 
@@ -224,6 +250,21 @@ namespace Hawkeye
         {
             ClientGameState clientState = gameState as ClientGameState;
             clientState.Log($"Lobby ID:{LobbyId} Name:{LobbyName} Current Players:{(Players != null ? Players.Count : 0)}/{MaxPlayers}");
+
+            // Add lobby to net objects
+            LobbyNetObject lobby = new LobbyNetObject(LobbyId, LobbyName, MaxPlayers, Players, ChatHistory);
+            clientState.Add(lobby);
+
+            // Goto lobby menu
+            clientState.Menus.Show(MenuManager.Menu.LobbyClient);
+        }
+    }
+
+    public class UpdateLobby : NetMessage
+    {
+        public override void Process(GameState gameState)
+        {
+            // TODO
         }
     }
 

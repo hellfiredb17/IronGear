@@ -17,7 +17,7 @@ namespace Hawkeye
             { typeof(CreateLobby).ToString(), typeof(CreateLobby) },
             { typeof(GetLobbyList).ToString(), typeof(GetLobbyList) },
             { typeof(ConnectToLobby).ToString(), typeof(ConnectToLobby) },
-            { typeof(SendLobbyChat).ToString(), typeof(SendLobbyChat) },
+            { typeof(SendChat).ToString(), typeof(SendChat) },
             { typeof(SendLobbyList).ToString(), typeof(SendLobbyList) },
             { typeof(SendLobbyState).ToString(), typeof(SendLobbyState) },
             { typeof(SendLobby).ToString(), typeof(SendLobby) },

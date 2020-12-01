@@ -14,9 +14,9 @@ namespace Hawkeye.Client
             tcp = new TCP();
         }
 
-        public void ConnectToServer(string ipaddress, int port)
+        public void ConnectToServer(string ipaddress, int port, Action onConnect)
         {
-            tcp.Connect(ipaddress, port);
+            tcp.Connect(ipaddress, port, onConnect);
         }
 
         public void SetId(int id)
@@ -48,6 +48,7 @@ namespace Hawkeye.Client
 
             //---- Event
             //----------
+            public Action OnConnected;
             public Action<string, string> OnProcessNetMessage;
 
             //---- Ctor
@@ -65,8 +66,10 @@ namespace Hawkeye.Client
 
             //---- Connect
             //------------
-            public void Connect(string ipaddress, int port)
+            public void Connect(string ipaddress, int port, Action onConnected)
             {
+                OnConnected = onConnected;
+
                 socket = new TcpClient
                 {
                     ReceiveBufferSize = SharedConsts.DATABUFFERSIZE,
@@ -83,9 +86,14 @@ namespace Hawkeye.Client
                 {
                     return;
                 }
+
+                // send connected event if one
+                OnConnected?.Invoke();
+                OnConnected = null;
+
+                // start reading data
                 stream = socket.GetStream();
-                stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
-                //Debug.Log("[Client]: Connected to server");
+                stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);                
             }
 
             private void ReceiveCallback(IAsyncResult result)

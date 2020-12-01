@@ -39,19 +39,19 @@ namespace Hawkeye.Server
 
         //---- Open
         //---------
-        public void Open(string ipAddress, int port)
+        public void Open(string ipAddress, int port, Action<int> onConnection = null)
         {
-            Open(IPAddress.Parse(ipAddress), port);
+            Open(IPAddress.Parse(ipAddress), port, onConnection);
         }
 
-        public void Open(IPAddress ipAddress, int port)
+        public void Open(IPAddress ipAddress, int port, Action<int> onConnection = null)
         {            
             listener = new TcpListener(ipAddress, port);
             listener.Start();
 
             // send event
             OnConnectionOpen?.Invoke();
-            OnConnection = null;
+            OnConnection = onConnection;
 
             // Open for connections
             listener.BeginAcceptTcpClient(new AsyncCallback(ServerAcceptClient), null);

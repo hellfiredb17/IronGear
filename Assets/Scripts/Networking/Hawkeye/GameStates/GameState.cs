@@ -34,6 +34,11 @@ namespace Hawkeye
             menuManager = MenuManager.UIManager;
         }
 
+        //---- Properties
+        //---------------
+        public State CurrentState => state;
+        public MenuManager Menus => menuManager;
+
         //---- State Change
         //-----------------
         public virtual void StateChange(State state)

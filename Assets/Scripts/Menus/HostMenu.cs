@@ -82,16 +82,8 @@ public class HostMenu : MenuBase
         // create lobby
         server.gameState.DirectMessage(new CreateLobby(LobbyName.text, int.Parse(MaxPlayers.text)));
 
-        /*
-        // setup lobby before entering lobby
-        LobbyMenu lobby = menuManager.GetMenu<LobbyMenu>(MenuManager.State.Lobby);
-        lobby.SetLobby(LobbyName.text);
-        lobby.SetPlayerCount(0, int.Parse(MaxPlayers.text));
-        lobby.SetHost(true);
-        */
-
         // goto lobby
-        menuManager.Show(MenuManager.State.Lobby);
+        menuManager.Show(MenuManager.Menu.LobbyHost);
     }
 
     //---- Actions
