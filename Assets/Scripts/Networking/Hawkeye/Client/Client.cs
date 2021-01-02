@@ -1,158 +1,141 @@
 ﻿using UnityEngine;
 using System.Net.Sockets;
 using System;
+using System.Collections.Generic;
+using Hawkeye.NetMessages;
 
 namespace Hawkeye.Client
 {
     public class Client
     {
-        public int Id;
-        public TCP tcp;
+        public string NetworkId;
+        public TcpClient Socket;
+        public Queue<ResponseMessage> IncomingMessages;
+        public SharedEnums.ConnectionState ConnectionState;
 
+        private NetworkStream stream;
+        private NetworkPacket packet;
+        private byte[] readBuffer;        
+
+        //---- Ctor
+        //---------
         public Client()
         {
-            tcp = new TCP();
+            ConnectionState = SharedEnums.ConnectionState.None;
+            IncomingMessages = new Queue<ResponseMessage>();
         }
 
-        public void ConnectToServer(string ipaddress, int port, Action onConnect)
+        //---- Connect
+        //------------
+        public void Connect(string ipaddress, int port)
         {
-            tcp.Connect(ipaddress, port, onConnect);
+            Socket = new TcpClient
+            {
+                ReceiveBufferSize = SharedConsts.DATABUFFERSIZE,
+                SendBufferSize = SharedConsts.DATABUFFERSIZE
+            };
+            readBuffer = new byte[SharedConsts.DATABUFFERSIZE];
+            Socket.BeginConnect(ipaddress, port, ConnectCallback, null);
         }
 
-        public void SetId(int id)
+        private void ConnectCallback(IAsyncResult result)
         {
-            this.Id = id;
-            tcp.SetId(id);
+            Socket.EndConnect(result);
+            if(!Socket.Connected)
+            {
+                return;
+            }
+
+            Debug.Log("[Client]: Connected to server");
+            ConnectionState = SharedEnums.ConnectionState.Connect;
+
+            // start reading data
+            stream = Socket.GetStream();
+            stream.BeginRead(readBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);                
         }
 
-        public void Send(NetMessage netMessage)
+        //---- Read Messages
+        //------------------
+        private void ReceiveCallback(IAsyncResult result)
         {
-            tcp.Send(netMessage);
+            try
+            {
+                int byteLength = stream.EndRead(result);
+                if (byteLength <= 0)
+                {
+                    ConnectionState = SharedEnums.ConnectionState.Disconnect;
+                    return;
+                }
+
+                // create network packet for incoming messages
+                if(packet == null)
+                {
+                    packet = new NetworkPacket();                    
+                }
+
+                byte[] data = new byte[byteLength];                    
+                Array.Copy(readBuffer, data, byteLength);
+
+                // read packet
+                int read = packet.Read(data);
+                if(read == 2)
+                {
+                    ConnectionState = SharedEnums.ConnectionState.Disconnect;
+                    return;
+                }
+                else if (read == 1)
+                {
+                    // Network message done, process
+                    var netMessage = JsonUtility.FromJson(packet.Message, NetMessage.ResponseMessages[packet.Type]) as ResponseMessage;
+                    IncomingMessages.Enqueue(netMessage);
+                    packet.ResetForNewMessage();
+                }
+
+                // start reading again
+                stream.BeginRead(readBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error receiving TCP data: {ex}");
+                // disconnect
+                ConnectionState = SharedEnums.ConnectionState.Disconnect;
+            }
+        }
+
+        //---- Send
+        //---------
+        public void Send(RequestMessage netMessage)
+        {
+            if(ConnectionState != SharedEnums.ConnectionState.Connect)
+            {
+                Debug.LogError("Trying to send message when not connected");
+                return;
+            }
+
+            NetworkPacket packet = new NetworkPacket();
+            if (packet.Write(netMessage))
+            {
+                stream.BeginWrite(packet.Buffer, 0, packet.Size, SendPacketCallback, null);
+            }
+        }
+
+        private void SendPacketCallback(IAsyncResult result)
+        {
+            stream.EndWrite(result);                
+        }
+
+        //---- Close / Disconnect
+        //-----------------------
+        public void Close()
+        {
+            stream?.Close();
+            Socket?.Close();
         }
 
         public void Disconnect()
         {
-            tcp.Disconnect();
+            // TODO ?
         }
-
-        //---- TCP Class ----
-        //-------------------
-        public class TCP
-        {
-            //---- Variables
-            //--------------
-            public TcpClient socket;
-            private NetworkStream stream;
-            private byte[] receiveBuffer;
-            private int id;
-
-            //---- Event
-            //----------
-            public Action OnConnected;
-            public Action<string, string> OnProcessNetMessage;
-
-            //---- Ctor
-            //---------
-            public TCP()
-            {                
-            }
-
-            //---- Setters
-            //------------
-            public void SetId(int id)
-            {
-                this.id = id;
-            }
-
-            //---- Connect
-            //------------
-            public void Connect(string ipaddress, int port, Action onConnected)
-            {
-                OnConnected = onConnected;
-
-                socket = new TcpClient
-                {
-                    ReceiveBufferSize = SharedConsts.DATABUFFERSIZE,
-                    SendBufferSize = SharedConsts.DATABUFFERSIZE
-                };
-                receiveBuffer = new byte[SharedConsts.DATABUFFERSIZE];
-                socket.BeginConnect(ipaddress, port, ConnectCallback, socket);
-            }
-
-            private void ConnectCallback(IAsyncResult result)
-            {
-                socket.EndConnect(result);
-                if(!socket.Connected)
-                {
-                    return;
-                }
-
-                // send connected event if one
-                OnConnected?.Invoke();
-                OnConnected = null;
-
-                // start reading data
-                stream = socket.GetStream();
-                stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);                
-            }
-
-            private void ReceiveCallback(IAsyncResult result)
-            {
-                try
-                {
-                    int byteLength = stream.EndRead(result);
-                    if (byteLength <= 0)
-                    {
-                        // TODO: disconnect
-                        return;
-                    }
-
-                    byte[] data = new byte[byteLength];
-                    
-                    Array.Copy(receiveBuffer, data, byteLength);
-
-                    // read packet
-                    NetworkPacket packet = new NetworkPacket();
-                    if(packet.Read(data))
-                    {                        
-                        OnProcessNetMessage?.Invoke(packet.MessageType, packet.NetworkMessage);
-                    }
-
-                    // start reading again
-                    stream.BeginRead(receiveBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"Error receiving TCP data: {ex}");
-                    // TODO: disconnect
-                }
-            }
-
-            //---- Send
-            //---------
-            public void Send(NetMessage netMessage)
-            {
-                NetworkPacket packet = new NetworkPacket();
-                if (packet.Write(netMessage))
-                {
-                    stream.BeginWrite(packet.Bytes, 0, packet.Size, SendPacketCallback, null);
-                }
-            }
-
-            private void SendPacketCallback(IAsyncResult result)
-            {
-                stream.EndWrite(result);                
-            }
-
-            //---- Disconnect
-            //---------------
-            public void Disconnect()
-            {
-                stream.Close();
-                socket.Close();
-            }
-
-        } // end tcp
 
     } // end client
 

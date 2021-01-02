@@ -12,7 +12,7 @@ public class LobbyClientMenu : LobbyMenu
     public TMP_InputField chatInput;
     public Text buttonText;
 
-    private TCPClient client;
+    private UnityClient client;
 
     //---- Menu Interface
     //-------------------
@@ -27,17 +27,17 @@ public class LobbyClientMenu : LobbyMenu
     protected override void GetlobbyNetObject()
     {
         // Get client
-        if(client == null)
+        /*if(client == null)
         {
-            client = TCPClient.Client;
-        }
+            client = UnityClient.Client;
+        }*/
 
         // Get lobby net object which contains all the details
-        lobby = client.gameState.FindObject<LobbyNetObject>();
+        /*lobby = client.gameState.FindObject<LobbyNetObject>();
         if (lobby == null)
         {
             client.gameState.LogError("Unable to find lobby net object");
-        }
+        }*/
     }
 
     //---- Input Actions
@@ -45,14 +45,14 @@ public class LobbyClientMenu : LobbyMenu
     private void OnSendChatPress()
     {
         string text = chatInput.text;
-        if(string.IsNullOrEmpty(text) || string.IsNullOrWhiteSpace(text))
+        /*if(string.IsNullOrEmpty(text) || string.IsNullOrWhiteSpace(text))
         {
             client.gameState.Log("Text is null, doing nothing");
             return;
         }
 
         // Send chat to server        
-        client.gameState.Send(new SendChat(client.gameState.NetId, text));
+        client.gameState.Send(new SendChat(client.gameState.NetId, text));*/
         // Clear text
         chatInput.text = string.Empty;
     }

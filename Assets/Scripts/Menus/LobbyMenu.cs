@@ -22,7 +22,7 @@ public abstract class LobbyMenu : MenuBase
     [Header("Chat")]
     public TextMeshProUGUI chat;    
     
-    protected LobbyNetObject lobby;
+    //protected LobbyNetObject lobby;
     
     protected StringBuilder sbChat;
     protected StringBuilder sbPlayers;
@@ -47,7 +47,7 @@ public abstract class LobbyMenu : MenuBase
     {
         base.Exit();
 
-        lobby = null;
+        //lobby = null;
         sbChat.Clear();
         sbPlayers.Clear();       
 
@@ -57,10 +57,10 @@ public abstract class LobbyMenu : MenuBase
 
     //---- Public
     //-----------
-    public void AddChat(LobbyChatHistory chat)
+    /*public void AddChat(LobbyChatHistory chat)
     {
 
-    }
+    }*/
 
     //---- Lobby Interface
     //--------------------
@@ -77,33 +77,33 @@ public abstract class LobbyMenu : MenuBase
 
     protected void UpdateLobbyName()
     {
-        title.text = $"[LOBBY]: {lobby.Name}";
+        //title.text = $"[LOBBY]: {lobby.Name}";
     }
 
     protected void UpdatePlayerCount()
     {
-        playerCount.text = $"{lobby.players.Count}/{lobby.MaxPlayers}";
+        //playerCount.text = $"{lobby.players.Count}/{lobby.MaxPlayers}";
     }
 
     protected void UpdatePlayerList()
     {
         sbPlayers.Clear();
-        foreach(var player in lobby.players)
+        /*foreach(var player in lobby.players)
         {
             string color = player.Value.Ready ? "green" : "red";
             sbPlayers.AppendLine($"<color={color}>{player.Value.Name}</color>");
-        }
+        }*/
         players.text = sbPlayers.ToString();
     }
 
     protected void UpdateChat()
     {
         sbChat.Clear();
-        for(int i = 0; i < lobby.chatHistory.Count; i++)
+        /*for(int i = 0; i < lobby.chatHistory.Count; i++)
         {
             LobbyChatHistory chat = lobby.chatHistory[i];
             sbChat.AppendLine($"[{chat.PlayerName}]:{chat.Chat}");
-        }
+        }*/
         chat.text = sbChat.ToString();
     }
 }

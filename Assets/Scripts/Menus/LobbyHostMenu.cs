@@ -7,7 +7,7 @@ public class LobbyHostMenu : LobbyMenu
 {
     //---- Variables
     //--------------
-    private TCPServer server;
+    private UnityServer server;
 
     //---- Menu Interface
     //-------------------
@@ -24,15 +24,15 @@ public class LobbyHostMenu : LobbyMenu
         // Get server object
         if (server == null)
         {
-            server = TCPServer.Server;
+            //server = UnityServer.Server;
         }
 
         // Get lobby net object which contains all the details
-        lobby = server.gameState.FindObject<LobbyNetObject>();
+        /*lobby = server.gameState.FindObject<LobbyNetObject>();
         if (lobby == null)
         {
             server.gameState.Log("Unable to find lobby net object");
-        }
+        }*/
     }
 
     //---- Start Game Action

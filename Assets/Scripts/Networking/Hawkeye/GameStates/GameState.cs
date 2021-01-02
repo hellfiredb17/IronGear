@@ -23,14 +23,14 @@ namespace Hawkeye
         //---- Variables
         //--------------
         protected MenuManager menuManager;
-        protected Dictionary<int, NetObject> netObjects;
+        //protected Dictionary<int, NetObject> netObjects;
         protected State state;
 
         //---- Ctor
         //---------
         public GameState()
         {
-            netObjects = new Dictionary<int, NetObject>();
+            //netObjects = new Dictionary<int, NetObject>();
             menuManager = MenuManager.UIManager;
         }
 
@@ -50,31 +50,31 @@ namespace Hawkeye
         //---------------
         public void ProcessNetMessage(string typeStr, string json)
         {
-            System.Type type;
+            /*System.Type type;
             if(!NetMessage.NetMessageTypes.TryGetValue(typeStr, out type))
             {
                 Debug.LogError($"Unable to parse {typeStr} to object");
                 return;
             }
             var netmessage = JsonUtility.FromJson(json, type) as NetMessage;
-            netmessage.Process(this);
+            netmessage.Process(this);*/
         }
 
-        public void ProcessDirectMessage(NetMessage netMessage)
+        /*public void ProcessDirectMessage(NetMessage netMessage)
         {
             netMessage.Process(this);
-        }
+        }*/
 
         //---- Messages
         //-------------
-        public void DirectMessage(NetMessage netMessage)
+        /*public void DirectMessage(NetMessage netMessage)
         {
             ProcessDirectMessage(netMessage);
-        }
+        }*/
 
         //---- NetObject
         //--------------
-        public T GetNetObject<T>(int id) where T : NetObject
+        /*public T GetNetObject<T>(int id) where T : NetObject
         {
             NetObject netObject;
             if(!netObjects.TryGetValue(id, out netObject))
@@ -82,9 +82,9 @@ namespace Hawkeye
                 return null;
             }
             return netObject as T;
-        }
+        }*/
 
-        public T FindObject<T>() where T : NetObject
+        /*public T FindObject<T>() where T : NetObject
         {
             foreach(var netObject in netObjects)
             {
@@ -94,9 +94,9 @@ namespace Hawkeye
                 }
             }
             return null;
-        }
+        }*/
 
-        public List<T> FindAllObjects<T>() where T : NetObject
+        /*public List<T> FindAllObjects<T>() where T : NetObject
         {
             List<T> objects = new List<T>();
             foreach (var netObject in netObjects)
@@ -107,16 +107,16 @@ namespace Hawkeye
                 }
             }
             return objects;
-        }
+        }*/
 
-        public void Add(NetObject netObject)
+        /*public void Add(NetObject netObject)
         {
             netObjects.Add(netObject.NetId, netObject);
-        }
+        }*/
 
         public void Remove(int netId)
         {
-            netObjects.Remove(netId);
+            //netObjects.Remove(netId);
         }
 
     }

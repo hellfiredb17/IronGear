@@ -1,29 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
+using Hawkeye.GameStates;
 
-namespace Hawkeye
+namespace Hawkeye.NetMessages
 {
     [System.Serializable]
     public abstract class NetMessage
     {
-        //---------- Map of all NetMessages to dictionary ---------
-        //---------------------------------------------------------
-        public static Dictionary<string, Type> NetMessageTypes = new Dictionary<string, Type>()
+        /// <summary>
+        /// Map of all Request Messages to type
+        /// </summary>
+        public static Dictionary<string, Type> RequestMessages = new Dictionary<string, Type>()
         {
-            // Connection Messages
-            { typeof(ConnectionEstablished).ToString(), typeof(ConnectionEstablished) },
-
-            // Lobby Messages
-            { typeof(CreateLobby).ToString(), typeof(CreateLobby) },
-            { typeof(GetLobbyList).ToString(), typeof(GetLobbyList) },
-            { typeof(ConnectToLobby).ToString(), typeof(ConnectToLobby) },
-            { typeof(SendChat).ToString(), typeof(SendChat) },
-            { typeof(SendLobbyList).ToString(), typeof(SendLobbyList) },
-            { typeof(SendLobbyState).ToString(), typeof(SendLobbyState) },
-            { typeof(SendLobby).ToString(), typeof(SendLobby) },
+            //---- Lobby Messages ----
+            //------------------------            
+            { typeof(RequestLobby).ToString(), typeof(RequestLobby) },            
         };
 
-        public abstract void Process(GameState gameState);
+        /// <summary>
+        /// Map of all Response Messages to type
+        /// </summary>
+        public static Dictionary<string, Type> ResponseMessages = new Dictionary<string, Type>()
+        {
+            //---- Connection Messages ----
+            //-----------------------------
+            { typeof(ResponseConnection).ToString(), typeof(ResponseConnection) },
+            { typeof(ResponseConnectionState).ToString(), typeof(ResponseConnectionState) },
+
+            //---- Lobby Messages ----
+            //------------------------                        
+            { typeof(ResponseLobby).ToString(), typeof(ResponseLobby) },
+        };
 
     } // end class
+
+    /// <summary>
+    /// Request Message - Client to Server
+    /// </summary>
+    public abstract class RequestMessage : NetMessage
+    {
+        public abstract void Process(IDediGameState gameState);
+    }
+
+    /// <summary>
+    /// Response Message - Server to Client
+    /// </summary>
+    public abstract class ResponseMessage : NetMessage
+    {
+        public abstract void Process(ClientGameState gameState);
+    }
+
 } // end namespace

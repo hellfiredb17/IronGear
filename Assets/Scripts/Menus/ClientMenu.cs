@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Hawkeye;
+using Hawkeye.Models;
 
 public class ClientMenu : MenuBase
 {
@@ -22,9 +23,9 @@ public class ClientMenu : MenuBase
     public Button connectButton;
     public Text buttonText;
 
-    private TCPClient client;
+    private UnityClient client;
     private int playerId;
-    private List<LobbyState> lobbies;
+    private List<LobbyModel> lobbies;
     private bool bConnected;
 
     //---- Interface
@@ -33,11 +34,11 @@ public class ClientMenu : MenuBase
     {
         if(client == null)
         {
-            client = TCPClient.Client;
-            if(client.gameState == null)
+            //client = UnityClient.Client;
+            /*if(client.gameState == null)
             {
-                client.gameState = new ClientGameState();
-            }
+                //client.gameState = new ClientGameState();
+            }*/
         }
 
         playerId = -1;
@@ -95,7 +96,7 @@ public class ClientMenu : MenuBase
     {
         if(ValidateIpaddress() && ValidatePort())
         {
-            client.gameState.Connect(ipaddressInput.text, int.Parse(portInput.text), OnConnectionEstablished);
+            //client.gameState.Connect(ipaddressInput.text, int.Parse(portInput.text), OnConnectionEstablished);
 
             // turn off all ui
             ipaddressInput.interactable = false;
@@ -105,7 +106,7 @@ public class ClientMenu : MenuBase
 
             return;
         }
-        client.gameState.Log("One or more validations failed");
+        //client.gameState.Log("One or more validations failed");
     }
 
     private bool ValidateIpaddress()
@@ -142,25 +143,25 @@ public class ClientMenu : MenuBase
     //------------------
     private bool GetPlayerID()
     {
-        NetObject netObject = client.gameState.FindObject<NetObject>();
+        /*NetObject netObject = client.gameState.FindObject<NetObject>();
         if(netObject == null)
         {
             return false;
         }
-        playerId = netObject.NetId;
+        playerId = netObject.NetId;*/
         return true;
     }
 
     //---- Get Lobby Count
     //--------------------
-    public void LobbyLists(List<LobbyState> lobbies)
+    public void LobbyLists(List<LobbyModel> lobbies)
     {
         this.lobbies = lobbies;
 
         connectButton.onClick.RemoveAllListeners();
         if (lobbies.Count == 0)
         {
-            client.gameState.Log("No open lobbies found");
+            //client.gameState.Log("No open lobbies found");
             buttonText.text = "Refresh";
             connectButton.onClick.AddListener(GetLobbyList);                        
         }
@@ -174,7 +175,7 @@ public class ClientMenu : MenuBase
 
     private void GetLobbyList()
     {
-        client.gameState.Send(new GetLobbyList(playerId));
+        //client.gameState.Send(new GetLobbyList(playerId));
     }
 
     //---- Join Lobby
@@ -190,6 +191,6 @@ public class ClientMenu : MenuBase
         connectButton.interactable = false;
         buttonText.text = "Joining...";
 
-        client.gameState.Send(new ConnectToLobby(lobbies[0].Id, playerId, playerInput.text));
+        //client.gameState.Send(new ConnectToLobby(lobbies[0].Id, playerId, playerInput.text));
     }
 }

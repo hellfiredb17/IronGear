@@ -47,6 +47,7 @@
   <PropertyGroup>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <UnityProjectGenerator>Unity/VSTU</UnityProjectGenerator>
+    <UnityProjectGeneratorVersion>4.8.2.0</UnityProjectGeneratorVersion>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>2019.4.2f1</UnityVersion>
@@ -108,22 +109,23 @@
     <Compile Include="Assets\Scripts\Menus\MenuBase.cs" />
     <Compile Include="Assets\Scripts\Menus\MenuManager.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\Client.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\TCPClient.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\ClientGameState.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\UnityClient.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\Client\ClientGameState.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\Dedi\DediGameState.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\GameState.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\ServerGameState.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\ConnectionNetMessages.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\LobbyNetMessages.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\ConnectionMessages\ConnectionResponses.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\LobbyMessages\LobbyRequests.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\LobbyMessages\LobbyResponses.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\NetMessage.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\PlayerNetMessages.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetObjects\LobbyNetObjects.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetObjects\NetObject.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Packet\NetworkPacket.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\ClientConnection.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\Server.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\ServerClient.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\TCPServer.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\TCPServerSend.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Server\UnityServer.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Models\LobbyChatModel.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Models\LobbyModel.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Models\LobbyPlayerModel.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\SharedConstants.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\SharedEnums.cs" />
     <Compile Include="Assets\Scripts\Preferences\BoardEditorPreferences.cs" />
     <Compile Include="Assets\Scripts\Preferences\HexTilePreferences.cs" />
     <Compile Include="Assets\Scripts\Preferences\MechComponentPreferences.cs" />

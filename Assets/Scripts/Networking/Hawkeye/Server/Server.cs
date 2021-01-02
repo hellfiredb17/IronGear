@@ -3,38 +3,24 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
+using Hawkeye.NetMessages;
 
 namespace Hawkeye.Server
 {
     public class Server
     {
-        //---- Delegate
-        //-------------
-        public delegate int GetNetworkId();
-
         //---- Variables
         //--------------
         private TcpListener listener;        
-        private Dictionary<int, ServerClient> clients;
-
-        //---- Events
-        //-----------
-        public Action OnConnectionOpen;
-        public Action OnConnectionClose;
-        public Action<int> OnConnection;
-        public Action<int> OnDisconnect;
-        public Action<string, string> OnProcessMessage;
-        public GetNetworkId GetId;
-
-        //---- Properties
-        //---------------
-        public bool Connected => clients?.Count > 0;
+        private Dictionary<string, ClientConnection> connections;
+        private HashSet<string> usedNetworkIds;
 
         //---- Ctor
         //---------
         public Server()
         {
-            clients = new Dictionary<int, ServerClient>();
+            connections = new Dictionary<string, ClientConnection>();
+            usedNetworkIds = new HashSet<string>();
         }
 
         //---- Open
@@ -49,11 +35,8 @@ namespace Hawkeye.Server
             listener = new TcpListener(ipAddress, port);
             listener.Start();
 
-            // send event
-            OnConnectionOpen?.Invoke();
-            OnConnection = onConnection;
-
             // Open for connections
+            Debug.Log($"[Server]:Open for connections on: {ipAddress}");
             listener.BeginAcceptTcpClient(new AsyncCallback(ServerAcceptClient), null);
         }
 
@@ -63,25 +46,35 @@ namespace Hawkeye.Server
 
             // Re-Open for connections
             listener.BeginAcceptTcpClient(new AsyncCallback(ServerAcceptClient), null);
-
-            //Debug.Log($"[Server]: Incoming connection from {client.Client.RemoteEndPoint}...");
-            if(clients.Count == SharedConsts.MAXCONNECTIONS)
+            
+            // Connections maxed out
+            if(connections.Count == SharedConsts.MAXCONNECTIONS)
             {
                 Debug.Log("[Server]: Failed to connect: Server full");
                 return;
             }
 
             // create connection
-            int id = GetId == null ? clients.Count : GetId();
-            ServerClient tcpClient = new ServerClient(id);
-            tcpClient.tcp.Connect(client);
-            tcpClient.tcp.OnProcessNetMessage = OnProcessMessage;
+            ClientConnection connection = new ClientConnection(GetNetworkId(), client);
+            connections.Add(connection.Id, connection);
 
-            // add to list
-            clients.Add(id, tcpClient);
+            // start reading incoming messages from connection
+            connection.BeginReadMessages();
 
-            // send event
-            OnConnection?.Invoke(tcpClient.Id);
+            // send back connection accept message
+            connection.Send(new ResponseConnection(connection.Id));
+        }
+
+        private string GetNetworkId()
+        {
+            string id;
+            do
+            {
+                id = Guid.NewGuid().ToString();
+            }
+            while (usedNetworkIds.Contains(id));
+            usedNetworkIds.Add(id);
+            return id;
         }
 
         //---- Close
@@ -89,29 +82,36 @@ namespace Hawkeye.Server
         public void Close()
         {            
             listener.Stop();
-            // send event
-            OnConnectionClose?.Invoke();
+            // TODO
+        }
+
+        //---- Update
+        //-----------
+        public void FixedUpdate(float dt)
+        {
+
         }
 
         //---- Send
         //---------
-        public void Send(int id, NetMessage netMessage)
+        public void Send(string id, ResponseMessage netMessage)
         {
-            if (!clients.ContainsKey(id))
+            ClientConnection connection;
+            if(!connections.TryGetValue(id, out connection))
             {
-                Debug.LogError($"[Server]: Does not contain key:{id} for client");
+                Debug.LogError($"Unable to find connection:{id}");
                 return;
             }
-            clients[id].tcp.Send(netMessage);
+            connection.Send(netMessage);
         }
 
         //---- Broadcast
         //--------------
-        public void Broadcast(NetMessage netMessage)
+        public void Broadcast(ResponseMessage netMessage)
         {
-            foreach (var client in clients)
+            foreach (var connection in connections)
             {
-                client.Value.tcp.Send(netMessage);
+                connection.Value.Send(netMessage);
             }
         }
     } // end class
