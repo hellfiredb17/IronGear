@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace Hawkeye.Models
 {
     /// <summary>
@@ -17,28 +16,18 @@ namespace Hawkeye.Models
         }
 
         //---- Variables
-        //--------------
-        public string Id;
-        public string Name;
-        public Status State;
-        public Queue<LobbyChatModel> Chats;
+        //--------------        
+        public string NetId;
+        public string DisplayName;
+        public Status State;        
         public bool Ready;
 
         //---- Ctor
         //---------
-        public LobbyPlayerModel(string netId, string name)
+        public LobbyPlayerModel(string id, string displayName)
         {
-            Id = netId;
-            Name = name;
-            State = Status.Disconnected;
-            Chats = new Queue<LobbyChatModel>();
-        }
-
-        //---- Chat
-        //---------
-        public void AddChat(LobbyChatModel chatModel)
-        {
-            Chats.Enqueue(chatModel);
+            NetId = id;
+            DisplayName = displayName;
         }
     } // end class
 }// end namespace

@@ -5,7 +5,7 @@ namespace Hawkeye.NetMessages
 {
     //---- All Responses (Server to Client) net messages for Lobby ----
     //-----------------------------------------------------------------
-    public class ResponseLobby : ResponseMessage
+    public class ResponseLobby : ResponseClientMessage
     {
         //---- Public
         //-----------
@@ -20,10 +20,10 @@ namespace Hawkeye.NetMessages
 
         //---- Interface
         //--------------
-        public override void Process(ClientGameState gameState)
+        public override void Process(Client client)
         {
-            // Sets the client's lobby
-            gameState.SetLobby(Lobby);
+            // TODO
+            UnityEngine.Debug.Log("Client got message - Response Lobby");
         }
     }
 } // end namespace

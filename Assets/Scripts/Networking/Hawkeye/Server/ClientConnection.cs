@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using UnityEngine;
 using Hawkeye.NetMessages;
 
-namespace Hawkeye.Server
+namespace Hawkeye
 {
     /// <summary>
     /// Class for a connection to a client
@@ -15,9 +15,10 @@ namespace Hawkeye.Server
         //---- Variables
         //--------------
         public string Id;
-        public TcpClient Socket;
-        public Queue<RequestMessage> IncomingMessages;
+        public TcpClient Socket;        
         public SharedEnums.ConnectionState ConnectionState;
+
+        public Action<string,string> OnProcessNetMessage;
 
         private NetworkStream stream;
         private NetworkPacket packet;
@@ -28,8 +29,7 @@ namespace Hawkeye.Server
         public ClientConnection(string id, TcpClient socket)
         {
             Id = id;
-            Socket = socket;
-            IncomingMessages = new Queue<RequestMessage>();
+            Socket = socket;            
             ConnectionState = SharedEnums.ConnectionState.Connect;
         }
 
@@ -98,9 +98,8 @@ namespace Hawkeye.Server
                 }
                 else if (read == 1)
                 {
-                    // Net Message done with send, process
-                    var netMessage = JsonUtility.FromJson(packet.Message, NetMessage.RequestMessages[packet.Type]) as RequestMessage;
-                    IncomingMessages.Enqueue(netMessage);
+                    // Net Message done with send, process                    
+                    OnProcessNetMessage?.Invoke(packet.Message, packet.Type);                    
                     packet.ResetForNewMessage();
                 }
 
@@ -117,7 +116,7 @@ namespace Hawkeye.Server
 
         //---- Send Messages
         //------------------
-        public void Send(ResponseMessage message)
+        public void Send(NetMessage message)
         {
             NetworkPacket packet = new NetworkPacket();
             if(packet.Write(message))

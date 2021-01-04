@@ -4,23 +4,50 @@ using UnityEngine;
 namespace Hawkeye.GameStates
 {
     /// <summary>
-    /// Client game state
-    /// Includes a Lobby and Game logic
+    /// Client Lobby state
+    /// </summary>
+    public class ClientLobbyState
+    {
+        //---- Variables
+        //--------------
+        public LobbyModel Model;
+        // TODO - lobby view
+        private Client clientConnection;
+
+        //---- Ctor
+        //---------
+        public ClientLobbyState(Client client)
+        {
+            clientConnection = client;
+        }
+
+        //---- Update
+        //-----------
+        public void Update(float dt)
+        {
+
+        }
+
+        //---- Public
+        //-----------
+    }
+
+    /// <summary>
+    /// Client game state    
     /// </summary>    
     public class ClientGameState
     {
         //---- Variables
-        //--------------        
-        public LobbyModel Lobby;
-        private Client.Client client;
+        //--------------
+        private Client client;
 
         //---- Properties
         //---------------
-        public Client.Client Client => client;
+        public Client Client => client;
 
         //---- Ctor
         //---------
-        public ClientGameState(Client.Client client)
+        public ClientGameState(Client client)
         {
             this.client = client;
         }
@@ -28,15 +55,7 @@ namespace Hawkeye.GameStates
         //---- Update
         //-----------
         public void Update(float dt)
-        {
-            if(client.IncomingMessages.Count > 0)
-            {
-                foreach(var message in client.IncomingMessages)
-                {
-                    message.Process(this);
-                }
-                client.IncomingMessages.Clear();
-            }
+        {   
         }
 
         //---- Interface
@@ -55,18 +74,6 @@ namespace Hawkeye.GameStates
         public void Error(string str)
         {
             Debug.LogError(str);
-        }
-        #endregion
-
-        #region Lobby
-        public LobbyModel GetLobby()
-        {
-            return Lobby;
-        }
-
-        public void SetLobby(LobbyModel model)
-        {
-            Lobby = model;
         }
         #endregion
     }

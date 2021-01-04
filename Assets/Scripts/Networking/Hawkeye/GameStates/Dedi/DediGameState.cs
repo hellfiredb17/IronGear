@@ -1,35 +1,14 @@
 ﻿using System.Collections.Generic;
 using Hawkeye.Models;
-using Hawkeye.NetMessages;
 using UnityEngine;
 
 namespace Hawkeye.GameStates
 {
     /// <summary>
-    /// Interface for all DediGameStates
-    /// This is used for processing NetMessages
-    /// </summary>
-    public interface IDediGameState
-    {
-        // Logging
-        void Log(string str);
-        void Warn(string str);
-        void Error(string str);
-
-        // Lobby
-        LobbyModel CreateLobby(string id);
-        LobbyModel GetLobby(string id);
-
-        // Messages
-        /*void Send(string connectionId, ResponseMessage responseMessage);
-        void BroadCast(ResponseMessage responseMessage);*/
-    }
-
-    /// <summary>
     /// Game state for dedi.
     /// Game state includes a lobby and game logic
     /// </summary>
-    public class DediGameState : IDediGameState
+    public class DediGameState
     {
         //---- Variables
         //--------------

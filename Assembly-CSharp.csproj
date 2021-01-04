@@ -112,8 +112,11 @@
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\UnityClient.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\Client\ClientGameState.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\Dedi\DediGameState.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\Dedi\DediLobbyPlayer.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\Dedi\DediLobbyState.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\GameStates\GameState.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\ConnectionMessages\ConnectionResponses.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\ClientNetMessages.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\DediNetMessages.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\LobbyMessages\LobbyRequests.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\LobbyMessages\LobbyResponses.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\NetMessage.cs" />

@@ -1,17 +1,22 @@
-﻿
+﻿using System;
+
 namespace Hawkeye.Models
 {
     public class LobbyChatModel
     {
         //---- Variables
         //--------------
-        public string ChatMessage;
+        public DateTime DateTime;
+        public string DisplayName;
+        public string Chat;
 
         //---- Ctor
         //---------
-        public LobbyChatModel(int netId, string chatMessage)
+        public LobbyChatModel(string name, string chat)
         {
-            ChatMessage = chatMessage;
+            DateTime = DateTime.Now;
+            DisplayName = name;
+            Chat = chat;
         }
     } // end class
 } // end namespace

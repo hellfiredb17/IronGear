@@ -5,7 +5,7 @@ namespace Hawkeye.NetMessages
 {
     //---- All Requests (Client to Server) net messages for Lobby ----
     //----------------------------------------------------------------
-    public class RequestLobby : RequestMessage
+    /*public class RequestLobby : RequestLobbyMessage
     {
         //---- Public
         //-----------
@@ -22,15 +22,8 @@ namespace Hawkeye.NetMessages
 
         //---- Interface
         //--------------
-        public override void Process(IDediGameState gameState)
+        public override void Process(LobbyModel lobby)
         {
-            LobbyModel lobby = gameState.GetLobby(LobbyName);
-            if(lobby == null)
-            {
-                // Create new lobby with ID
-                lobby = gameState.CreateLobby(LobbyName);
-            }
-
         }
-    }
+    }*/
 } //  end namespce

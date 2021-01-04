@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using Hawkeye;
-using Hawkeye.Client;
 using Hawkeye.GameStates;
 using Hawkeye.NetMessages;
 
@@ -40,7 +39,7 @@ public class UnityClient : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            client.Send(new RequestLobby(client.NetworkId, "123"));
+            client.Send(new RequestCreateLobby(client.NetworkId, "123", 4));
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3))

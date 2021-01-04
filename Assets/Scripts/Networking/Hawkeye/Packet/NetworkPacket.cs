@@ -115,7 +115,7 @@ namespace Hawkeye
                     if (bytes.Count > sizeof(int))
                     {
                         typeLength = ReadInt(0, bytes.GetRange(0, sizeof(int)).ToArray());
-                        Debug.Log($"Message Type Length: {typeLength}");
+                        //Debug.Log($"Message Type Length: {typeLength}");
                         bytes.RemoveRange(0, sizeof(int));
                     }
                     else
@@ -130,7 +130,7 @@ namespace Hawkeye
                     if(bytes.Count >= typeLength)
                     {
                         messageType = ReadString(0, typeLength, bytes.ToArray());
-                        Debug.Log($"Message Type: {messageType}");
+                        //Debug.Log($"Message Type: {messageType}");
                         bytes.RemoveRange(0, typeLength);
                     }
                     else
@@ -145,7 +145,7 @@ namespace Hawkeye
                     if (bytes.Count > sizeof(int))
                     {
                         msgLength = ReadInt(0, bytes.ToArray());
-                        Debug.Log($"Message Length: {msgLength}");
+                        //Debug.Log($"Message Length: {msgLength}");
                         bytes.RemoveRange(0, sizeof(int));
                     }
                     else
@@ -160,7 +160,7 @@ namespace Hawkeye
                     if(bytes.Count >= msgLength)
                     {
                         message = ReadString(0, msgLength, bytes.ToArray());
-                        Debug.Log($"Message: {message}");
+                        //Debug.Log($"Message: {message}");
                         bytes.RemoveRange(0, msgLength);
                         return 1;
                     }

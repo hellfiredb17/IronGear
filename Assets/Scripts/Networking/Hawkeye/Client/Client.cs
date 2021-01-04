@@ -1,28 +1,25 @@
 ﻿using UnityEngine;
 using System.Net.Sockets;
 using System;
-using System.Collections.Generic;
 using Hawkeye.NetMessages;
 
-namespace Hawkeye.Client
+namespace Hawkeye
 {
     public class Client
     {
         public string NetworkId;
-        public TcpClient Socket;
-        public Queue<ResponseMessage> IncomingMessages;
+        public TcpClient Socket;        
         public SharedEnums.ConnectionState ConnectionState;
 
         private NetworkStream stream;
         private NetworkPacket packet;
-        private byte[] readBuffer;        
+        private byte[] readBuffer;
 
         //---- Ctor
         //---------
         public Client()
         {
-            ConnectionState = SharedEnums.ConnectionState.None;
-            IncomingMessages = new Queue<ResponseMessage>();
+            ConnectionState = SharedEnums.ConnectionState.None;            
         }
 
         //---- Connect
@@ -85,9 +82,8 @@ namespace Hawkeye.Client
                 }
                 else if (read == 1)
                 {
-                    // Network message done, process
-                    var netMessage = JsonUtility.FromJson(packet.Message, NetMessage.ResponseMessages[packet.Type]) as ResponseMessage;
-                    IncomingMessages.Enqueue(netMessage);
+                    // Network message done, process                    
+                    ProcessNetMessage(packet.Message, packet.Type);
                     packet.ResetForNewMessage();
                 }
 
@@ -102,9 +98,31 @@ namespace Hawkeye.Client
             }
         }
 
+        private void ProcessNetMessage(string message, string type)
+        {
+            NetMessage.NetMessageType t = NetMessage.GetMessageType(type);
+            switch(t)
+            {
+                case NetMessage.NetMessageType.ResponseClient:
+                    var clientMessage = JsonUtility.FromJson(message, NetMessage.ResponseClientMessages[type]) as ResponseClientMessage;
+                    clientMessage.Process(this);
+                    break;
+                case NetMessage.NetMessageType.ResponseLobby:
+                    var lobbyMessage = JsonUtility.FromJson(message, NetMessage.ResponseLobbyMessages[type]) as ResponseLobbyMessage;
+                    // TODO
+                    break;
+                case NetMessage.NetMessageType.ResponseGame:
+                    var gameMessage = JsonUtility.FromJson(message, NetMessage.ResponseGameMessages[type]) as ResponseGameMessage;
+                    // TODO
+                    break;
+                default:
+                    break;
+            }
+        }
+
         //---- Send
         //---------
-        public void Send(RequestMessage netMessage)
+        public void Send(NetMessage netMessage)
         {
             if(ConnectionState != SharedEnums.ConnectionState.Connect)
             {

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using Hawkeye;
-using Hawkeye.Server;
 
 public class UnityServer : MonoBehaviour
 {
