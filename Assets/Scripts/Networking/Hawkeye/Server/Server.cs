@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using UnityEngine;
 using Hawkeye.NetMessages;
 using Hawkeye.GameStates;
+using Hawkeye.Models;
 
 namespace Hawkeye
 {
@@ -130,6 +131,7 @@ namespace Hawkeye
 
         //---- Lobby
         //----------
+        #region Lobby Functions
         public DediLobbyState CreateLobby(string displayName, int maxPlayers, string hostId)
         {
             ClientConnection host = GetConnection(hostId);
@@ -142,7 +144,7 @@ namespace Hawkeye
             lobbyState.AddConnection(host, displayName);
 
             // add lobby to server
-            lobbies.Add(lobbyState.Model.LobbyID, lobbyState);
+            lobbies.Add(lobbyState.Model.LobbyId, lobbyState);
 
             return lobbyState;
         }
@@ -156,6 +158,20 @@ namespace Hawkeye
             }
             return lobbyState;
         }
+
+        public LobbyInfo[] GetLobbyInfoList()
+        {
+            List<LobbyInfo> lobbyInfo = new List<LobbyInfo>();
+            foreach(var lobby in lobbies)
+            {
+                DediLobbyState dediLobbyState = lobby.Value;
+                LobbyInfo info = new LobbyInfo(dediLobbyState.Model.LobbyId, dediLobbyState.Model.LobbyName, 
+                    dediLobbyState.Players.Count, dediLobbyState.Model.MaxPlayers);
+                lobbyInfo.Add(info);
+            }
+            return lobbyInfo.ToArray();
+        }
+        #endregion
 
         //---- Close
         //----------

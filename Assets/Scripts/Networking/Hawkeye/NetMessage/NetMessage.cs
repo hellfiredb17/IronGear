@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Hawkeye.GameStates;
-using Hawkeye.Models;
 
 namespace Hawkeye.NetMessages
 {
@@ -23,12 +22,14 @@ namespace Hawkeye.NetMessages
 
         //---------- Map of all Request Messages ----------
         //-------------------------------------------------
+        #region Request Message Maps
         /// <summary>
         /// Map of all Request Dedi Messages to type
         /// </summary>
         public static Dictionary<string, Type> RequestDediMessages = new Dictionary<string, Type>()
         {
                { typeof(RequestCreateLobby).ToString(), typeof(RequestCreateLobby) },
+               { typeof(RequestLobbyList).ToString(), typeof(RequestLobbyList) },
         };
 
         /// <summary>
@@ -36,7 +37,10 @@ namespace Hawkeye.NetMessages
         /// </summary>
         public static Dictionary<string, Type> RequestLobbyMessages = new Dictionary<string, Type>()
         {
-
+            { typeof(RequestJoinLobby).ToString(), typeof(RequestJoinLobby) },
+            { typeof(RequestLeaveLobby).ToString(), typeof(RequestLeaveLobby) },
+            { typeof(RequestLobbyChat).ToString(), typeof(RequestLobbyChat) },
+            { typeof(RequestLobbyToggleReady).ToString(), typeof(RequestLobbyToggleReady) },
         };
 
         /// <summary>
@@ -46,9 +50,11 @@ namespace Hawkeye.NetMessages
         {
 
         };
+        #endregion
 
         //---------- Map of all Response Messages ----------
         //--------------------------------------------------
+        #region Response Message Maps
         /// <summary>
         /// Map of all Response Client Messages to type
         /// </summary>
@@ -56,6 +62,7 @@ namespace Hawkeye.NetMessages
         {
             { typeof(ResponseCreateClient).ToString(), typeof(ResponseCreateClient) },
             { typeof(ResponseCreateLobby).ToString(), typeof(ResponseCreateLobby) },
+            { typeof(ResponseLobbyList).ToString(), typeof(ResponseLobbyList) },
         };
 
         /// <summary>
@@ -63,7 +70,7 @@ namespace Hawkeye.NetMessages
         /// </summary>
         public static Dictionary<string, Type> ResponseLobbyMessages = new Dictionary<string, Type>()
         {
-            { typeof(ResponseLobby).ToString(), typeof(ResponseLobby) },
+            { typeof(ResponseUpdateLobby).ToString(), typeof(ResponseUpdateLobby) },
         };
 
         /// <summary>
@@ -72,6 +79,7 @@ namespace Hawkeye.NetMessages
         public static Dictionary<string, Type> ResponseGameMessages = new Dictionary<string, Type>()
         {            
         };
+        #endregion
 
         //---------- Util ----------
         //--------------------------

@@ -2,6 +2,7 @@
 
 namespace Hawkeye.Models
 {
+    [Serializable]
     public class LobbyChatModel
     {
         //---- Variables

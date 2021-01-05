@@ -2,9 +2,10 @@
 
 namespace Hawkeye.NetMessages
 {
-	//---------- Collection of all Dedi Netmessage Requests ---------
-	//---------------------------------------------------------------
-	public class RequestCreateLobby : RequestDediMessage
+    //---------- Collection of all Dedi Netmessage Requests ---------
+    //---------------------------------------------------------------
+    #region Lobby Request Messages
+    public class RequestCreateLobby : RequestDediMessage
 	{
 		public string ConnectionId;
 		public string LobbyName;
@@ -26,5 +27,21 @@ namespace Hawkeye.NetMessages
 			lobbyState.SendMessage(new ResponseCreateLobby(lobbyState.Model), null);
 		}
 	}
+
+	public class RequestLobbyList : RequestDediMessage
+	{
+		public string ConnectionId;
+		
+		public RequestLobbyList(string connectionId)
+		{
+			ConnectionId = connectionId;			
+		}
+
+		public override void Process(Server server)
+		{
+			server.Send(ConnectionId, new ResponseLobbyList(server.GetLobbyInfoList()));
+		}
+	}
+	#endregion
 
 } // end namespace

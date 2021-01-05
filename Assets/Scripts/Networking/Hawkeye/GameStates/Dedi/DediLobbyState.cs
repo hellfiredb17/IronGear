@@ -110,15 +110,16 @@ namespace Hawkeye.GameStates
                 return;
             }
             player.Model.Ready = !player.Model.Ready;
+            UnityEngine.Debug.Log($"{player.Model.DisplayName}:" + (player.Model.Ready ? "Ready" : "Not Ready"));
         }
 
         //---- Add Chat
         //-------------
-        public void AddChat(string displayName, string chat)
+        public void AddChat(string playerName, string chatMessage)
         {
-            LobbyChatModel chatModel = new LobbyChatModel(displayName, chat);
+            LobbyChatModel chatModel = new LobbyChatModel(playerName, chatMessage);
             Model.Chat.Enqueue(chatModel); // update model data
-            UnityEngine.Debug.Log($"[{chatModel.DateTime.ToShortTimeString()}]{chatModel.DisplayName}:{chatModel.Chat}");
+            UnityEngine.Debug.Log($"[{chatModel.DateTime.ToShortTimeString()}]{chatModel.DisplayName}:{chatModel.Chat}");            
         }
 
         //---- Send Messages

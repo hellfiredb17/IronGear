@@ -2,24 +2,44 @@
 using System.Net.Sockets;
 using System;
 using Hawkeye.NetMessages;
+using Hawkeye.Models;
+using Hawkeye.GameStates;
 
 namespace Hawkeye
 {
     public class Client
     {
+        //---- Variables
+        //--------------
         public string NetworkId;
         public TcpClient Socket;        
         public SharedEnums.ConnectionState ConnectionState;
 
+        // network packets
         private NetworkStream stream;
         private NetworkPacket packet;
         private byte[] readBuffer;
+
+        // lobby state
+        public ClientLobbyState lobbyState;
+        private LobbyInfo[] lobbylist;
+
+        // game state
+        public ClientGameState gameState;
 
         //---- Ctor
         //---------
         public Client()
         {
             ConnectionState = SharedEnums.ConnectionState.None;            
+        }
+
+        //---- Update
+        //-----------
+        public void FixedUpdate(float dt)
+        {
+            lobbyState?.FixedUpdate(dt);
+            gameState?.FixedUpdate(dt);
         }
 
         //---- Connect
@@ -108,8 +128,14 @@ namespace Hawkeye
                     clientMessage.Process(this);
                     break;
                 case NetMessage.NetMessageType.ResponseLobby:
+                    if(lobbyState == null)
+                    {
+                        Debug.LogError($"Unable to process lobby message when lobby has yet to be made");
+                        return;
+                    }
                     var lobbyMessage = JsonUtility.FromJson(message, NetMessage.ResponseLobbyMessages[type]) as ResponseLobbyMessage;
-                    // TODO
+                    lobbyState.IncomingMessages.Enqueue(lobbyMessage);
+                    
                     break;
                 case NetMessage.NetMessageType.ResponseGame:
                     var gameMessage = JsonUtility.FromJson(message, NetMessage.ResponseGameMessages[type]) as ResponseGameMessage;
@@ -119,6 +145,27 @@ namespace Hawkeye
                     break;
             }
         }
+
+        //---- Client Messages
+        //--------------------
+        #region Lobby Functions
+        public void ResponseLobbyList(LobbyInfo[] LobbyList)
+        {
+            lobbylist = LobbyList;
+            for(int i = 0; i < lobbylist.Length; i++)
+            {
+                string output = $"Lobby:{lobbylist[i].LobbyId} Name:{lobbylist[i].LobbyName} {lobbylist[i].PlayerCount}/{lobbylist[i].MaxCount}";
+                Debug.Log(output);
+            }
+            // TODO - update the lobby list view
+        }
+
+        public void CreateLobby(LobbyModel model)
+        {
+            Debug.Log($"Creating Client lobby:{model.LobbyName}");
+            lobbyState = new ClientLobbyState(this, model);
+        }
+        #endregion
 
         //---- Send
         //---------

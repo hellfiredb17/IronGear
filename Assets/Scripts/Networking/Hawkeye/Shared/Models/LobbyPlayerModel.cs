@@ -4,22 +4,13 @@ namespace Hawkeye.Models
     /// <summary>
     /// Lobby player data to be sent over network
     /// </summary>
+    [System.Serializable]
     public class LobbyPlayerModel
     {
-        //---- Status
-        //-----------
-        public enum Status
-        {
-            Disconnected,
-            Joined,
-            Left
-        }
-
         //---- Variables
         //--------------        
         public string NetId;
-        public string DisplayName;
-        public Status State;        
+        public string DisplayName;        
         public bool Ready;
 
         //---- Ctor

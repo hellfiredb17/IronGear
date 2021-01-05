@@ -1,5 +1,4 @@
-﻿using Hawkeye.NetMessages;
-using Hawkeye.Models;
+﻿using Hawkeye.Models;
 
 namespace Hawkeye.NetMessages
 {
@@ -18,9 +17,10 @@ namespace Hawkeye.NetMessages
 		{
 			client.NetworkId = ConnectionId;
 		}
-	}
-	
-	public class ResponseCreateLobby : ResponseClientMessage
+	}	
+
+    #region Lobby Response Messages
+    public class ResponseCreateLobby : ResponseClientMessage
 	{
 		public LobbyModel LobbyModel;
 
@@ -31,8 +31,24 @@ namespace Hawkeye.NetMessages
 
 		public override void Process(Client client)
 		{
-			UnityEngine.Debug.Log($"Got create lobby message Name:{LobbyModel.LobbyName}");
+			client.CreateLobby(LobbyModel);
 		}
 	}
+
+	public class ResponseLobbyList : ResponseClientMessage
+    {
+		public LobbyInfo[] LobbyInfo;
+
+		public ResponseLobbyList(LobbyInfo[] info)
+		{
+			LobbyInfo = info;
+		}
+
+        public override void Process(Client client)
+        {
+			client.ResponseLobbyList(LobbyInfo);
+        }
+    }
+    #endregion
 
 } // end namespace

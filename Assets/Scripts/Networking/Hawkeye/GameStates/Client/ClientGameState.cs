@@ -4,35 +4,6 @@ using UnityEngine;
 namespace Hawkeye.GameStates
 {
     /// <summary>
-    /// Client Lobby state
-    /// </summary>
-    public class ClientLobbyState
-    {
-        //---- Variables
-        //--------------
-        public LobbyModel Model;
-        // TODO - lobby view
-        private Client clientConnection;
-
-        //---- Ctor
-        //---------
-        public ClientLobbyState(Client client)
-        {
-            clientConnection = client;
-        }
-
-        //---- Update
-        //-----------
-        public void Update(float dt)
-        {
-
-        }
-
-        //---- Public
-        //-----------
-    }
-
-    /// <summary>
     /// Client game state    
     /// </summary>    
     public class ClientGameState
@@ -54,7 +25,7 @@ namespace Hawkeye.GameStates
 
         //---- Update
         //-----------
-        public void Update(float dt)
+        public void FixedUpdate(float dt)
         {   
         }
 

@@ -14,8 +14,7 @@ namespace Hawkeye
         public DediLobbyPlayer(ClientConnection clientConnection, string displayName)
         {
             Connection = clientConnection;
-            Model = new LobbyPlayerModel(clientConnection.Id, displayName);
-            Model.State = LobbyPlayerModel.Status.Joined;
+            Model = new LobbyPlayerModel(clientConnection.Id, displayName);            
         }
     }
 } // end namespace
