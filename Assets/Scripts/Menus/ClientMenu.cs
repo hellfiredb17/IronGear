@@ -25,7 +25,7 @@ public class ClientMenu : MenuBase
 
     private UnityClient client;
     private int playerId;
-    private List<LobbyModel> lobbies;
+    private List<LobbyState> lobbies;
     private bool bConnected;
 
     //---- Interface
@@ -154,7 +154,7 @@ public class ClientMenu : MenuBase
 
     //---- Get Lobby Count
     //--------------------
-    public void LobbyLists(List<LobbyModel> lobbies)
+    public void LobbyLists(List<LobbyState> lobbies)
     {
         this.lobbies = lobbies;
 

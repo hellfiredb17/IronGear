@@ -8,7 +8,7 @@ namespace Hawkeye
     {
         //---- Connection Enum ----
         //-------------------------
-        public enum ConnectionState
+        public enum ConnectionStatus
         {
             None,
             Connect,

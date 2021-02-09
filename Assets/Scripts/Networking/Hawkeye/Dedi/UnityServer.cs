@@ -6,12 +6,14 @@ public class UnityServer : MonoBehaviour
     //---- Variables
     //--------------
     private Server server;
+    private UnityLogger logger;
 
     //---- Awake / Start
     //------------------
     private void Awake()
     {
-        server = new Server();
+        logger = new UnityLogger();
+        server = new Server(logger);
     }
 
     private void Start()
@@ -32,9 +34,6 @@ public class UnityServer : MonoBehaviour
     }
 
     private void KeyboardInput()
-    {
-        if(Input.GetKeyDown(KeyCode.Q))
-        {            
-        }
+    {   
     }
 }

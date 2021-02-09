@@ -12,10 +12,21 @@ namespace Hawkeye
     /// </summary>
     public class NetworkPacket
     {
+        //---- Enum
+        //---------
+        public enum ProcessResult
+        {
+            NotDone = 0,
+            Done,
+            Error
+        }
+
         //---- Variables
         //--------------        
+        private string interfaceType;
         private string messageType;
         private string message;
+        private int interfaceLength;
         private int typeLength;
         private int msgLength;
         private List<byte> bytes;
@@ -23,6 +34,7 @@ namespace Hawkeye
         //---- Properties
         //---------------
         public byte[] Buffer => bytes.ToArray();
+        public string Interface => interfaceType;
         public string Type => messageType;
         public string Message => message;
         public int Size => bytes.Count;
@@ -38,8 +50,10 @@ namespace Hawkeye
         //-----------
         public void Reset()
         {
+            interfaceLength = 0;
             typeLength = 0;
             msgLength = 0;
+            interfaceType = null;
             messageType = null;
             message = null;
             bytes.Clear();
@@ -50,8 +64,10 @@ namespace Hawkeye
         /// </summary>
         public void ResetForNewMessage()
         {
+            interfaceLength = 0;
             typeLength = 0;
             msgLength = 0;
+            interfaceType = null;
             messageType = null;
             message = null;
         }
@@ -63,15 +79,20 @@ namespace Hawkeye
             try
             {
                 Reset();
-                
-                messageType = netMessage.GetType().ToString();
+
+                interfaceType = netMessage.InterfaceType;
+                messageType = netMessage.NetMessageType;
                 string json = JsonUtility.ToJson(netMessage);
 
                 // -- Order of data -- //
+                // Length of interface
+                // String of interface
                 // Length of type
                 // String of type
                 // Length of msg
                 // Strting of msg                
+                AppendInt(interfaceType.Length);
+                AppendString(interfaceType);
                 AppendInt(messageType.Length);                
                 AppendString(messageType);
                 AppendInt(json.Length);
@@ -100,83 +121,121 @@ namespace Hawkeye
         //---- Read
         //---------
         /// <summary>
-        /// Read bytes, returns 0 if not done (new more data), 1 if message is done, 2 for an error
-        /// </summary>        
-        public int Read(byte[] data)
+        /// Read bytes, returns not done (new more data), done, or an error
+        /// </summary>
+        public ProcessResult Read(byte[] data)
         {   
             try
             {
                 // add bytes to byte buffer for processing
                 bytes.AddRange(data);
 
-                // get type length
-                if(typeLength == 0)
+                // parse interface, type, and message
+                if(!GetInterface() || !GetMessageType())
                 {
-                    if (bytes.Count > sizeof(int))
-                    {
-                        typeLength = ReadInt(0, bytes.GetRange(0, sizeof(int)).ToArray());
-                        //Debug.Log($"Message Type Length: {typeLength}");
-                        bytes.RemoveRange(0, sizeof(int));
-                    }
-                    else
-                    {
-                        return 0;
-                    }
+                    return ProcessResult.NotDone;
                 }
 
-                // get the message type
-                if(string.IsNullOrEmpty(messageType))
-                {
-                    if(bytes.Count >= typeLength)
-                    {
-                        messageType = ReadString(0, typeLength, bytes.ToArray());
-                        //Debug.Log($"Message Type: {messageType}");
-                        bytes.RemoveRange(0, typeLength);
-                    }
-                    else
-                    {
-                        return 0;
-                    }
-                }
-
-                // get message length
-                if(msgLength == 0)
-                {
-                    if (bytes.Count > sizeof(int))
-                    {
-                        msgLength = ReadInt(0, bytes.ToArray());
-                        //Debug.Log($"Message Length: {msgLength}");
-                        bytes.RemoveRange(0, sizeof(int));
-                    }
-                    else
-                    {
-                        return 0;
-                    }
-                }
-
-                // get message
-                if(string.IsNullOrEmpty(message))
-                {
-                    if(bytes.Count >= msgLength)
-                    {
-                        message = ReadString(0, msgLength, bytes.ToArray());
-                        //Debug.Log($"Message: {message}");
-                        bytes.RemoveRange(0, msgLength);
-                        return 1;
-                    }
-                    else
-                    {
-                        return 0;
-                    }
-                }
-
-                Debug.LogError("Reached code that should never get to, check that we are reseting after complete message");
-                return 1;
+                // parse the message
+                return GetMessage();
             }
             catch(Exception ex)
             {
                 Debug.LogError($"Network packet read error\n{ex}");
-                return 2;
+                return ProcessResult.Error;
+            }
+        }
+
+        private bool GetInterface()
+        {
+            // get interface length
+            if (interfaceLength == 0)
+            {
+                if (bytes.Count > sizeof(int))
+                {
+                    interfaceLength = ReadInt(0, bytes.GetRange(0, sizeof(int)).ToArray());
+                    bytes.RemoveRange(0, sizeof(int));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            // get the interface type
+            if (string.IsNullOrEmpty(interfaceType))
+            {
+                if (bytes.Count >= interfaceLength)
+                {
+                    interfaceType = ReadString(0, interfaceLength, bytes.ToArray());
+                    bytes.RemoveRange(0, interfaceLength);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool GetMessageType()
+        {
+            // get type length
+            if (typeLength == 0)
+            {
+                if (bytes.Count > sizeof(int))
+                {
+                    typeLength = ReadInt(0, bytes.GetRange(0, sizeof(int)).ToArray());                    
+                    bytes.RemoveRange(0, sizeof(int));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            // get the message type
+            if (string.IsNullOrEmpty(messageType))
+            {
+                if (bytes.Count >= typeLength)
+                {
+                    messageType = ReadString(0, typeLength, bytes.ToArray());                    
+                    bytes.RemoveRange(0, typeLength);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private ProcessResult GetMessage()
+        {
+            // get message length
+            if (msgLength == 0)
+            {
+                if (bytes.Count > sizeof(int))
+                {
+                    msgLength = ReadInt(0, bytes.ToArray());                    
+                    bytes.RemoveRange(0, sizeof(int));
+                }
+                else
+                {
+                    return ProcessResult.NotDone;
+                }
+            }
+
+            // get message            
+            if (bytes.Count >= msgLength)
+            {
+                message = ReadString(0, msgLength, bytes.ToArray());                    
+                bytes.RemoveRange(0, msgLength);
+                return ProcessResult.Done;
+            }
+            else
+            {
+                return ProcessResult.NotDone;
             }
         }
 
