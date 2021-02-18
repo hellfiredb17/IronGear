@@ -1,36 +1,31 @@
 ﻿using System.Text;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Hawkeye;
 
-public class LobbyHostMenu : MenuBase
+public abstract class LobbyMenu : MenuBase
 {
     //---- Variables
     //--------------
     [Header("Buttons")]
-    public Button actionButton;
-    public Button sendButton;
+    public Button actionButton;    
 
-    [Header("Input")]
-    public TMP_InputField chatInput;
-
-    [Header("Labels")]
+    [Header("Title")]
     public TextMeshProUGUI title;
+
+    [Header("Players")]
     public TextMeshProUGUI playerCount;
     public TextMeshProUGUI players;
-    public TextMeshProUGUI chat;
-    public Text buttonText;
 
-    private TCPServer server;
-    private LobbyNetObject lobby;
-
-    private StringBuilder sbChat;
-    private StringBuilder sbPlayers;
+    [Header("Chat")]
+    public TextMeshProUGUI chat;    
     
-    private int maxCount;
-    private bool bHost;
-    private bool bReady;
+    //protected LobbyNetObject lobby;
+    
+    protected StringBuilder sbChat;
+    protected StringBuilder sbPlayers;
 
     //---- Interface
     //--------------
@@ -38,21 +33,12 @@ public class LobbyHostMenu : MenuBase
     {
         sbChat = new StringBuilder();
         sbPlayers = new StringBuilder();
-        sendButton.onClick.AddListener(OnSendChat);
     }
 
     public override void Enter()
     {
-        if(server == null)
-        {
-            server = TCPServer.Server;
-        }
-
-        lobby = server.gameState.FindObject<LobbyNetObject>();
-        if(lobby == null)
-        {
-            Debug.LogError("Unable to find lobby net object");
-        }
+        GetlobbyNetObject();
+        UpdateLobbyName();
         UpdateUI();
         base.Enter();
     }
@@ -60,7 +46,8 @@ public class LobbyHostMenu : MenuBase
     public override void Exit()
     {
         base.Exit();
-        lobby = null;
+
+        //lobby = null;
         sbChat.Clear();
         sbPlayers.Clear();       
 
@@ -68,66 +55,55 @@ public class LobbyHostMenu : MenuBase
         chat.text = string.Empty;
     }
 
-    //---- Event Actions
-    //------------------
-    private void OnStartGame()
-    {        
-    }
-
-    private void OnToggleReady()
+    //---- Public
+    //-----------
+    /*public void AddChat(LobbyChatHistory chat)
     {
-        bReady = !bReady;        
-        buttonText.text = bReady ? "UNREADY" : "READY";
-    }
 
-    private void OnSendChat()
-    {
-        string chat = chatInput.text;
-        chatInput.text = string.Empty;        
-    }
+    }*/
 
-    //---- Update UI
-    //--------------
+    //---- Lobby Interface
+    //--------------------
+    protected abstract void GetlobbyNetObject();
+
+    //---- UI Functions
+    //-----------------
     public void UpdateUI()
     {
-        SetLobbyName(lobby.Name);
-        SetPlayerCount(lobby.players.Count, lobby.MaxPlayers);
         UpdatePlayerList();
+        UpdatePlayerCount();
         UpdateChat();
     }
-    
-    private void UpdatePlayerList()
+
+    protected void UpdateLobbyName()
+    {
+        //title.text = $"[LOBBY]: {lobby.Name}";
+    }
+
+    protected void UpdatePlayerCount()
+    {
+        //playerCount.text = $"{lobby.players.Count}/{lobby.MaxPlayers}";
+    }
+
+    protected void UpdatePlayerList()
     {
         sbPlayers.Clear();
-        foreach(var player in lobby.players)
+        /*foreach(var player in lobby.players)
         {
             string color = player.Value.Ready ? "green" : "red";
             sbPlayers.AppendLine($"<color={color}>{player.Value.Name}</color>");
-        }
+        }*/
         players.text = sbPlayers.ToString();
     }
 
-    private void UpdateChat()
+    protected void UpdateChat()
     {
         sbChat.Clear();
-        for(int i = 0; i < lobby.chatHistory.Count; i++)
+        /*for(int i = 0; i < lobby.chatHistory.Count; i++)
         {
             LobbyChatHistory chat = lobby.chatHistory[i];
             sbChat.AppendLine($"[{chat.PlayerName}]:{chat.Chat}");
-        }
+        }*/
         chat.text = sbChat.ToString();
-    }
-
-    //---- Setters
-    //------------
-    public void SetLobbyName(string lobby)
-    {
-        title.text = $"[LOBBY]: {lobby}";
-    }
-
-    public void SetPlayerCount(int current, int max)
-    {
-        maxCount = max;
-        playerCount.text = $"{current}/{max}";
     }
 }

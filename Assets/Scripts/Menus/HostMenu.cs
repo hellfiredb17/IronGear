@@ -28,7 +28,7 @@ public class HostMenu : MenuBase
     [Header("Button")]
     public Button CreateButton;
 
-    TCPServer server;
+    UnityServer server;
     private Error errorState;    
 
     //---- Interface
@@ -47,11 +47,11 @@ public class HostMenu : MenuBase
     {
         if (server == null)
         {
-            server = TCPServer.Server;
+            /*server = UnityServer.Server;
             if (server.gameState == null)
             {
                 server.gameState = new ServerGameState();
-            }
+            }*/
         }        
 
         IpAddress.text = SharedConsts.LOCAL_IPADDRESS;
@@ -80,18 +80,10 @@ public class HostMenu : MenuBase
     private void CreateLobby()
     {
         // create lobby
-        server.gameState.DirectMessage(new CreateLobby(LobbyName.text, int.Parse(MaxPlayers.text)));
-
-        /*
-        // setup lobby before entering lobby
-        LobbyMenu lobby = menuManager.GetMenu<LobbyMenu>(MenuManager.State.Lobby);
-        lobby.SetLobby(LobbyName.text);
-        lobby.SetPlayerCount(0, int.Parse(MaxPlayers.text));
-        lobby.SetHost(true);
-        */
+        //server.gameState.DirectMessage(new CreateLobby(LobbyName.text, int.Parse(MaxPlayers.text)));
 
         // goto lobby
-        menuManager.Show(MenuManager.State.Lobby);
+        menuManager.Show(MenuManager.Menu.LobbyHost);
     }
 
     //---- Actions
@@ -101,7 +93,7 @@ public class HostMenu : MenuBase
         CreateButton.gameObject.SetActive(false);
         
         // open connection
-        server.gameState.Open(IpAddress.text, int.Parse(Port.text), OnOpenConnection);
+        //server.gameState.Open(IpAddress.text, int.Parse(Port.text), OnOpenConnection);
     }
 
     private void ValidateName(string text)

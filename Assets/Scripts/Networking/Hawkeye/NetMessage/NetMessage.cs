@@ -1,29 +1,61 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace Hawkeye
+namespace Hawkeye.NetMessages
 {
-    [System.Serializable]
-    public abstract class NetMessage
+    //---------- Enum Message Interfaces ------------
+    //-----------------------------------------------
+    public enum InterfaceTypes
     {
-        //---------- Map of all NetMessages to dictionary ---------
-        //---------------------------------------------------------
-        public static Dictionary<string, Type> NetMessageTypes = new Dictionary<string, Type>()
+        None,
+        Lobby,
+    }
+
+    //---------- NetMessage Utils -------------------
+    //-----------------------------------------------
+    public static class NetMessageUtils
+    {
+        public static InterfaceTypes GetInterfaceType(string str)
         {
-            // Connection Messages
-            { typeof(ConnectionEstablished).ToString(), typeof(ConnectionEstablished) },
+            if(Enum.TryParse(str, out InterfaceTypes type))
+            {
+                return type;
+            }
+            return InterfaceTypes.None;
+        }
+    }
 
-            // Lobby Messages
-            { typeof(CreateLobby).ToString(), typeof(CreateLobby) },
-            { typeof(GetLobbyList).ToString(), typeof(GetLobbyList) },
-            { typeof(ConnectToLobby).ToString(), typeof(ConnectToLobby) },
-            { typeof(SendLobbyChat).ToString(), typeof(SendLobbyChat) },
-            { typeof(SendLobbyList).ToString(), typeof(SendLobbyList) },
-            { typeof(SendLobbyState).ToString(), typeof(SendLobbyState) },
-            { typeof(SendLobby).ToString(), typeof(SendLobby) },
-        };
+    //---------- NetMessage Interface / Class -------
+    //-----------------------------------------------
+    public interface INetMessage
+    {
+        string InterfaceType { get; }
+        string NetMessageType { get; }
+    }
 
-        public abstract void Process(GameState gameState);
+    [Serializable]
+    public abstract class NetMessage : INetMessage
+    {
+        //---- NetMessage Interface
+        //-------------------------
+        public virtual string InterfaceType => throw new NotImplementedException();
+        public virtual string NetMessageType => throw new NotImplementedException();
+    }
 
-    } // end class
+    //---------- Client to Dedi NetMessage ----------
+    //-----------------------------------------------
+    [Serializable]
+    public abstract class ClientToDediMessage : NetMessage
+    {
+        //---- Variables
+        //--------------
+        public string ClientId;
+    }
+
+    //---------- Dedi to Client NetMessage ----------
+    //-----------------------------------------------
+    [Serializable]
+    public abstract class DediToClientMessage : NetMessage
+    {        
+    }
+
 } // end namespace
