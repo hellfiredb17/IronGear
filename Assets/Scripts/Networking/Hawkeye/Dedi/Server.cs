@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 using Hawkeye.NetMessages;
+using Hawkeye.Models;
 
 namespace Hawkeye
 {
@@ -13,10 +14,9 @@ namespace Hawkeye
         //--------------
         private TcpListener listener;        
         private Dictionary<string, DediConnection> connections;
-        private HashSet<string> usedNetworkIds;
+        private DediLobbies lobbies;
+        private HashSet<string> usedNetworkTokens;
         private ILog log;
-
-        //private Dictionary<string, DediLobbyState> lobbies;
 
         //---- Ctor
         //---------
@@ -24,8 +24,8 @@ namespace Hawkeye
         {
             log = logger;
             connections = new Dictionary<string, DediConnection>();
-            usedNetworkIds = new HashSet<string>();
-            //lobbies = new Dictionary<string, DediLobbyState>();
+            usedNetworkTokens = new HashSet<string>();
+            lobbies = new DediLobbies(this, log);            
         }
 
         //---- Open
@@ -46,7 +46,7 @@ namespace Hawkeye
         }
 
         private void ServerAcceptClient(IAsyncResult result)
-        {
+        {            
             TcpClient client = listener.EndAcceptTcpClient(result);
 
             // Re-Open for connections
@@ -59,9 +59,10 @@ namespace Hawkeye
                 return;
             }
 
-            // create connection
-            DediConnection connection = new DediConnection(GetNetworkId(), client, log);
-            //connection.OnProcessNetMessage = ProcessNetMessage;
+            // create token Id
+            string token = GetNetworkToken();            
+            DediConnection connection = new DediConnection(token, client, log);
+            connection.LobbyListener = lobbies;            
             connections.Add(connection.NetworkId, connection);
 
             // start reading incoming messages from connection
@@ -69,38 +70,6 @@ namespace Hawkeye
 
             // send back connection accept message
             //connection.Send(new ResponseCreateClient(connection.Id));
-        }
-
-        //---- Processing Of NetMessages
-        //------------------------------
-        private void ProcessNetMessage(string message, string type)
-        {
-            // enum for request type, cast to correct message type for processing
-            /*NetMessage.NetMessageType t = NetMessage.GetMessageType(type);
-            switch(t)
-            {
-                case NetMessage.NetMessageType.RequestDedi:
-                    var dediMessage = JsonUtility.FromJson(message, NetMessage.RequestDediMessages[type]) as RequestDediMessage;
-                    dediMessage.Process(this);
-                    break;
-                case NetMessage.NetMessageType.RequestLobby:
-                    var lobbyMessage = JsonUtility.FromJson(message, NetMessage.RequestLobbyMessages[type]) as RequestLobbyMessage;
-                    DediLobbyState lobby = GetLobby(lobbyMessage.LobbyId);
-                    if(lobby == null)
-                    {
-                        Debug.LogError($"Server cannot process lobbyMessage:{type}\nMessage:{message}");
-                        return;
-                    }
-                    lobby.IncomingMessages.Enqueue(lobbyMessage);
-                    break;
-                case NetMessage.NetMessageType.RequestGame:
-                    var gameMessage = JsonUtility.FromJson(message, NetMessage.RequestGameMessages[type]) as RequestGameMessage;
-                    // TODO -
-                    break;
-                default:
-                    Debug.LogError($"Server cannot process netmessage:{type}\nMessage:{message}");
-                    break;
-            }*/
         }
 
         //---- Connection
@@ -117,15 +86,15 @@ namespace Hawkeye
 
         //---- Network Ids
         //----------------
-        public string GetNetworkId()
+        public string GetNetworkToken()
         {
             string id;
             do
             {
                 id = Guid.NewGuid().ToString();
             }
-            while (usedNetworkIds.Contains(id));
-            usedNetworkIds.Add(id);
+            while (usedNetworkTokens.Contains(id));
+            usedNetworkTokens.Add(id);
             return id;
         }
 
@@ -141,10 +110,8 @@ namespace Hawkeye
         //-----------
         public void FixedUpdate(float dt)
         {
-            /*foreach(var lobby in lobbies)
-            {
-                lobby.Value.FixedUpdate(dt);
-            }*/
+            // Lobbies updates
+            lobbies.FixedUpdate(dt);
         }
 
         //---- Send

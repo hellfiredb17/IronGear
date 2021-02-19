@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using Hawkeye.NetMessages;
+using UnityEngine; // for json - might need to think about this if not in this project
 
 namespace Hawkeye
 {
@@ -53,8 +54,25 @@ namespace Hawkeye
 
         protected override void ProcessNetMessage(string interfaceType, string messageType, string message)
         {
-            // TODO
-            base.ProcessNetMessage(interfaceType, messageType, message);
+            InterfaceTypes type = NetMessageUtils.GetInterfaceType(interfaceType);
+            switch(type)
+            {
+                case InterfaceTypes.Lobby:
+                    ProcessLobbyMessages(messageType, message);
+                    break;
+            }
+        }
+
+        private void ProcessLobbyMessages(string messageType, string message)
+        {
+            if(LobbyMessageUtils.GetType(messageType, out Type type))
+            {
+                LobbyListener?.OnProcess(JsonUtility.FromJson(message, type), type);
+            }
+            else
+            {
+                Log.Error($"Unable to parse type: {messageType}");
+            }            
         }
 
     } // end class

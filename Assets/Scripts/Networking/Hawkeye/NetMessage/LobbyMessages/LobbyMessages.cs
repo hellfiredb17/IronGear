@@ -11,10 +11,12 @@ namespace Hawkeye.NetMessages
         private static Dictionary<string, Type> _lobbyMessageTypes = new Dictionary<string, Type>
         {
             // -- dedi to client
-            {"UpdateLobbyState",  typeof(UpdateLobbyState)},
-            {"ResponseLobbyList",  typeof(ResponseLobbyList)},
+            {typeof(UpdateLobbyState).ToString(),  typeof(UpdateLobbyState)},
+            {typeof(ResponseLobbyList).ToString(),  typeof(ResponseLobbyList)},
 
             // -- client to dedi
+            {typeof(CreateLobby).ToString(),  typeof(CreateLobby)},
+            {typeof(JoinLobby).ToString(),  typeof(JoinLobby)},
         };
 
         public static bool GetType(string str, out Type type)
@@ -36,7 +38,7 @@ namespace Hawkeye.NetMessages
         //---- NetMessage Interface
         //-------------------------
         public override string InterfaceType => InterfaceTypes.Lobby.ToString();
-        public override string NetMessageType => GetType().ToString();
+        //public override string NetMessageType => GetType().ToString();
     }
 
     [Serializable]
@@ -45,7 +47,7 @@ namespace Hawkeye.NetMessages
         //---- NetMessage Interface
         //-------------------------
         public override string InterfaceType => InterfaceTypes.Lobby.ToString();
-        public override string NetMessageType => GetType().ToString();
+        //public override string NetMessageType => GetType().ToString();
     }
     #endregion
 

@@ -38,6 +38,7 @@ namespace Hawkeye
         public string Type => messageType;
         public string Message => message;
         public int Size => bytes.Count;
+        public bool BytesNullOrEmpty => bytes == null || bytes.Count == 0;
 
         //---- Ctor
         //---------
@@ -120,16 +121,19 @@ namespace Hawkeye
 
         //---- Read
         //---------
+        public void AppendBytes(byte[] data)
+        {
+            // add bytes to byte buffer for processing
+            bytes.AddRange(data);
+        }
+
         /// <summary>
         /// Read bytes, returns not done (new more data), done, or an error
         /// </summary>
-        public ProcessResult Read(byte[] data)
+        public ProcessResult Read()
         {   
             try
             {
-                // add bytes to byte buffer for processing
-                bytes.AddRange(data);
-
                 // parse interface, type, and message
                 if(!GetInterface() || !GetMessageType())
                 {

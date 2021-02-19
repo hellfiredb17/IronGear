@@ -3,6 +3,45 @@ using System.Collections.Generic;
 
 namespace Hawkeye.Models
 {
+    //---------- Lobby Extensions for Classes ---------
+    //-------------------------------------------------
+    public static class LobbyExtensions
+    {
+        //---- Lobby State ----
+        //---------------------
+        #region Lobby extensions
+        public static bool ContainsPlayerId(this LobbyState state, string id)
+        {
+            for(int i = 0; i < state.Players.Count; i++)
+            {
+                if(state.Players[i].Id == id)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static void AddPlayer(this LobbyState state, string id, string name)
+        {
+            state.Players.Add(new LobbyPlayerState(id, name));
+        }
+
+        public static void RemovePlayer(this LobbyState state, string id)
+        {
+            for (int i = 0; i < state.Players.Count; i++)
+            {
+                if (state.Players[i].Id == id)
+                {
+                    state.Players.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+        #endregion
+
+    } // end extensions class
+
     //---------- Lobby State ---------
     //--------------------------------
     [Serializable]

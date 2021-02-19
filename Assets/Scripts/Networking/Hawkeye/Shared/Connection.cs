@@ -51,18 +51,30 @@ namespace Hawkeye
                 Array.Copy(readBuffer, data, byteLength);
 
                 // read packet
-                NetworkPacket.ProcessResult process = packet.Read(data);
-                if (process == NetworkPacket.ProcessResult.Error)
+                packet.AppendBytes(data);
+                while (!packet.BytesNullOrEmpty)
                 {
-                    Status = SharedEnums.ConnectionStatus.Disconnect;
-                    return;
-                }
-                else if (process == NetworkPacket.ProcessResult.Done)
-                {
-                    // Network message done, process                    
-                    ProcessNetMessage(packet.Interface, packet.Type, packet.Message);
-                    packet.ResetForNewMessage();
-                }
+                    NetworkPacket.ProcessResult process = packet.Read();
+                    if (process == NetworkPacket.ProcessResult.Error)
+                    {
+                        Status = SharedEnums.ConnectionStatus.Disconnect;
+                        return;
+                    }
+
+                    if(process == NetworkPacket.ProcessResult.NotDone)
+                    {
+                        // Packet was broken up, need another packet to finish so wait to read more
+                        break;
+                    }
+                    else if (process == NetworkPacket.ProcessResult.Done)
+                    {
+                        // Network message done, process                    
+                        ProcessNetMessage(packet.Interface, packet.Type, packet.Message);
+                        packet.ResetForNewMessage();
+
+                        // will continue to read until all messages are read from bytes.
+                    }
+                }                
 
                 // start reading again
                 stream.BeginRead(readBuffer, 0, SharedConsts.DATABUFFERSIZE, ReceiveCallback, null);
@@ -77,7 +89,7 @@ namespace Hawkeye
 
         protected virtual void ProcessNetMessage(string interfaceType, string messageType, string message)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Processing net messages is not implemented");
         }
 
         //---- Send

@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System;
 using Hawkeye.NetMessages;
+using Hawkeye.Models;
 
 namespace Hawkeye
 {
@@ -28,7 +29,10 @@ namespace Hawkeye
                 SendBufferSize = SharedConsts.DATABUFFERSIZE
             };
             readBuffer = new byte[SharedConsts.DATABUFFERSIZE];
-            Socket.BeginConnect(ipaddress, port, ConnectCallback, null);
+            Socket.BeginConnect(ipaddress, port, ConnectCallback, new ConnectionState()
+            {
+                NetworkId = "DEBUG"
+            });
         }
 
         private void ConnectCallback(IAsyncResult result)
@@ -41,6 +45,10 @@ namespace Hawkeye
 
             Log?.Output("[Client]: Connected to server");
             Status = SharedEnums.ConnectionStatus.Connect;
+
+            // DEBUG for now just setting player id as const string but this will either come from
+            // sign in, or another way to track players
+            NetworkId = (result.AsyncState as ConnectionState).NetworkId;
 
             // start reading data
             stream = Socket.GetStream();

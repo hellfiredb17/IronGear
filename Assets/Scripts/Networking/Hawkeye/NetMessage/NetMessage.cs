@@ -7,6 +7,7 @@ namespace Hawkeye.NetMessages
     public enum InterfaceTypes
     {
         None,
+        Connection,
         Lobby,
     }
 
@@ -38,7 +39,8 @@ namespace Hawkeye.NetMessages
         //---- NetMessage Interface
         //-------------------------
         public virtual string InterfaceType => throw new NotImplementedException();
-        public virtual string NetMessageType => throw new NotImplementedException();
+        //public virtual string NetMessageType => throw new NotImplementedException();
+        public string NetMessageType => GetType().ToString();
     }
 
     //---------- Client to Dedi NetMessage ----------
