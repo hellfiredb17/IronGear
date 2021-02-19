@@ -14,8 +14,7 @@ namespace Hawkeye
     // Client side interface
     //-------------------------------------
     public interface IClientConnectionListener : INetworkListener
-    {
-        Models.ConnectionState State { get; }
+    {        
         void OnNetworkToken(NetworkToken token);
         void OnUpdateConnectionState(UpdateConnectionState state);
     }

@@ -56,14 +56,14 @@ namespace Hawkeye.NetMessages
     {
         //---- Variables
         //--------------
-        public ConnectionState State;
+        public ClientState State;
 
         //---- Ctor
         //---------
-        public ClientInformation(ConnectionState state)
+        public ClientInformation(ClientState state)
         {
             Token = state.NetworkToken;
-            ClientId = state.ClientId;
+            ClientId = state.Id;
             State = state;
         }
     }
@@ -92,11 +92,11 @@ namespace Hawkeye.NetMessages
     {
         //---- Variables
         //--------------
-        public ConnectionState State;
+        public ClientState State;
 
         //---- Ctor
         //---------
-        public UpdateConnectionState(ConnectionState state)
+        public UpdateConnectionState(ClientState state)
         {
             State = state;
         }

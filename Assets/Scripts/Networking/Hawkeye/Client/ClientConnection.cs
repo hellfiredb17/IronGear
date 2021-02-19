@@ -2,7 +2,6 @@
 using System.Net.Sockets;
 using System;
 using Hawkeye.NetMessages;
-using Hawkeye.Models;
 
 namespace Hawkeye
 {
@@ -13,10 +12,15 @@ namespace Hawkeye
         public ILobbyClientListener LobbyListener;
         public IClientConnectionListener ConnectionListener;
 
+        //---- Variables
+        //--------------
+        private Models.ClientState _state;
+
         //---- Ctor
         //---------
-        public ClientConnection(ILog logger) : base()
+        public ClientConnection(Models.ClientState state, ILog logger) : base()
         {
+            _state = state;
             Log = logger;
         }
 
@@ -97,7 +101,7 @@ namespace Hawkeye
         //---------
         public void Send(ClientToDediMessage netMessage)
         {
-            netMessage.ClientId = NetworkId;
+            netMessage.ClientId = _state.Id;
             SendNetMessage(netMessage);
         }
 

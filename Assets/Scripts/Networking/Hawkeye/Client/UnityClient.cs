@@ -10,22 +10,14 @@ public class UnityClient : MonoBehaviour
     public string IpAddress = SharedConsts.LOCAL_IPADDRESS;
     public int Port = SharedConsts.PORT;
 
-    [Header("Views")]
-    public GameObject LobbyView;
-    public GameObject GameView;
-
-    private UnityLogger log;
-    private ClientConnection connection;
-    private ClientConnectionInterface connectionInterface;
+    [Header("NetworkBridge")]
+    public NetworkBridge NetworkBridge;
 
     //---- Awake
     //----------
     private void Awake()
-    {        
-        log = new UnityLogger();        
-        connection = new ClientConnection(log);
-        connectionInterface = new ClientConnectionInterface(connection, log);
-        connection.ConnectionListener = connectionInterface;
+    {
+        NetworkBridge.Init();
     }
 
     //---- Updates
@@ -44,35 +36,35 @@ public class UnityClient : MonoBehaviour
         // KEYBOARD TESTING CONNECTION
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            connection.Connect(IpAddress, Port);
+            NetworkBridge.Connection.Connect(IpAddress, Port);
         }
 
         // LOBBY FUNCTIONS
         if (Input.GetKeyDown(KeyCode.Alpha2)) // create + join
         {
-            connection.Send(new CreateLobby("123", 4));
-            connection.Send(new JoinLobby("123", "All The Tea"));
+            NetworkBridge.Connection.Send(new CreateLobby("123", 4));
+            NetworkBridge.Connection.Send(new JoinLobby("123", NetworkBridge.State.DisplayName));
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3)) // leave
         {
-            connection.Send(new LeaveLobby("123"));
+            NetworkBridge.Connection.Send(new LeaveLobby("123"));
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha4)) // ready
         {
-            connection.Send(new PlayerReady("123", true));
+            NetworkBridge.Connection.Send(new PlayerReady("123", true));
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha5)) // chat
         {
-            connection.Send(new PlayerChat("123", "This is a test chat - Hello"));
+            NetworkBridge.Connection.Send(new PlayerChat("123", "This is a test chat - Hello"));
         }
 
         // LOBBY LISTING
         if (Input.GetKeyDown(KeyCode.Alpha5)) // get lobby list
         {
-            connection.Send(new RequestLobbyList());
+            NetworkBridge.Connection.Send(new RequestLobbyList());
         }
     }
 }

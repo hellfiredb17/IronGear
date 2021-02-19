@@ -107,8 +107,9 @@
     <Compile Include="Assets\Scripts\Menus\MenuBase.cs" />
     <Compile Include="Assets\Scripts\Menus\MenuManager.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\ClientConnection.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\ClientConnectionInterface.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\ClientNetworkBridge.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\ClientConnectionListener.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\ClientLobby.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\NetworkBridge.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\UnityClient.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\UnityLogger.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Dedi\DediConnection.cs" />
@@ -125,7 +126,7 @@
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Packet\NetworkPacket.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Connection.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\ILog.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Models\ConnectionStates.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Models\ClientState.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Models\LobbyStates.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\SharedConstants.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\SharedEnums.cs" />

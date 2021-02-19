@@ -4,31 +4,25 @@ using System;
 
 namespace Hawkeye
 {
-    public class ClientConnectionInterface : IClientConnectionListener
+    public class ClientConnectionListener : IClientConnectionListener
     {
         //---- Variables
         //--------------
         private ILog _log;
         private ClientConnection _connection;
-        private ConnectionState _state;
+        private ClientState _state;
 
         //---- Ctor
         //---------
-        public ClientConnectionInterface(ClientConnection connection, ILog log)
+        public ClientConnectionListener(ClientState state, ClientConnection connection, ILog log)
         {
+            _state = state;
             _connection = connection;
             _log = log;
-
-            // TODO - read any client data here
-            _state = new ConnectionState();
-            _state.ClientId = "DEBUG";
-            _state.DisplayName = "DKBUDS";
         }
 
         //----- Connection Interface
         //--------------------------
-        public ConnectionState State => _state;
-
         public void OnProcess(object netMessage, Type type)
         {
             if(type == typeof(NetworkToken))
@@ -45,10 +39,10 @@ namespace Hawkeye
         {
             _log.Output($"Recieved network token: {token.Token}");
 
-            _state.NetworkToken = token.Token;
-            _state.Status = ConnectionStatus.Online;
+            _state.NetworkToken = token.Token;            
 
             // send client state back to server
+            _connection.NetworkId = token.Token;
             _connection.Send(new ClientInformation(_state));
         }
 

@@ -133,7 +133,7 @@ namespace Hawkeye
 
         private void Broadcast(LobbyState state, DediToClientMessage netMessage)
         {
-            string output = $"Lobby:[{state.Id}] [{state.DisplayName}]\nPlayers: {state.Players.Count}/{state.MaxPlayers}";
+            _log.Output($"Lobby:[{state.Id}] [{state.DisplayName}]\nPlayers: {state.Players.Count}/{state.MaxPlayers}");
             for (int i = 0; i < state.Players.Count; i++)
             {
                 _server.Send(state.Players[i].Id, netMessage);
