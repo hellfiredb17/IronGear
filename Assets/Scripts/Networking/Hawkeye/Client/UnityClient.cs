@@ -16,21 +16,16 @@ public class UnityClient : MonoBehaviour
 
     private UnityLogger log;
     private ClientConnection connection;
-    private ClientNetworkBridge networkBridge;
+    private ClientConnectionInterface connectionInterface;
 
     //---- Awake
     //----------
     private void Awake()
     {        
-        log = new UnityLogger();
+        log = new UnityLogger();        
         connection = new ClientConnection(log);
-    }
-
-    private void SetupNetworkBridge()
-    {
-        networkBridge = new ClientNetworkBridge();
-
-        // link lobby messages
+        connectionInterface = new ClientConnectionInterface(connection, log);
+        connection.ConnectionListener = connectionInterface;
     }
 
     //---- Updates

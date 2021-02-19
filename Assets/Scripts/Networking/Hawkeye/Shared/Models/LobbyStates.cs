@@ -125,7 +125,7 @@ namespace Hawkeye.Models
 
     //---------- Lobby List State ---------
     //-------------------------------------
-    [System.Serializable]
+    [Serializable]
     public class LobbyListState
     {
         //---- Variables

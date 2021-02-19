@@ -12,9 +12,10 @@ namespace Hawkeye.NetMessages
         {
             // -- dedi to client
             {typeof(NetworkToken).ToString(),  typeof(NetworkToken)},
+            {typeof(UpdateConnectionState).ToString(),  typeof(UpdateConnectionState)},
 
             // -- client to dedi
-            {typeof(ClientConnection).ToString(),  typeof(ClientConnection)},            
+            {typeof(ClientInformation).ToString(),  typeof(ClientInformation)},            
         };
 
         public static bool GetType(string str, out Type type)
@@ -35,7 +36,7 @@ namespace Hawkeye.NetMessages
 
         //---- NetMessage Interface
         //-------------------------
-        public override string InterfaceType => InterfaceTypes.Lobby.ToString();
+        public override string InterfaceType => InterfaceTypes.Connection.ToString();
     }
 
     [Serializable]
@@ -51,19 +52,19 @@ namespace Hawkeye.NetMessages
     //------------------------------------------------
     #region Client to Dedi Messages
     [Serializable]
-    public class ClientConnection : ClientToDediConnectionMessage
+    public class ClientInformation : ClientToDediConnectionMessage
     {
         //---- Variables
-        //--------------        
-        public string DisplayName;
+        //--------------
+        public ConnectionState State;
 
         //---- Ctor
         //---------
-        public ClientConnection(string token, string id, string name)
+        public ClientInformation(ConnectionState state)
         {
-            Token = token;
-            ClientId = id;
-            DisplayName = name;
+            Token = state.NetworkToken;
+            ClientId = state.ClientId;
+            State = state;
         }
     }
     #endregion
@@ -71,6 +72,7 @@ namespace Hawkeye.NetMessages
     //---------- Dedi to Client Messages -------------
     //------------------------------------------------
     #region Dedi to Client
+    [Serializable]
     public class NetworkToken : DediToClientConnectionMessage
     {
         //----- Variables
@@ -82,6 +84,21 @@ namespace Hawkeye.NetMessages
         public NetworkToken(string token)
         {
             Token = token;
+        }
+    }
+
+    [Serializable]
+    public class UpdateConnectionState : DediToClientConnectionMessage
+    {
+        //---- Variables
+        //--------------
+        public ConnectionState State;
+
+        //---- Ctor
+        //---------
+        public UpdateConnectionState(ConnectionState state)
+        {
+            State = state;
         }
     }
     #endregion

@@ -69,7 +69,7 @@ namespace Hawkeye
             connection.BeginReadMessages();
 
             // send back connection accept message
-            //connection.Send(new ResponseCreateClient(connection.Id));
+            connection.Send(new NetworkToken(token));
         }
 
         //---- Connection

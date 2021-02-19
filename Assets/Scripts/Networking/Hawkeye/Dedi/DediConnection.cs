@@ -13,6 +13,7 @@ namespace Hawkeye
     {
         //---- NetMessage Listeners
         //-------------------------
+        public IDediConnectionListener ConnectionListener;
         public ILobbyDediListener LobbyListener;
 
         //---- Ctor
@@ -57,9 +58,24 @@ namespace Hawkeye
             InterfaceTypes type = NetMessageUtils.GetInterfaceType(interfaceType);
             switch(type)
             {
+                case InterfaceTypes.Connection:
+                    ProcessConnectionMessages(messageType, message);
+                    break;
                 case InterfaceTypes.Lobby:
                     ProcessLobbyMessages(messageType, message);
                     break;
+            }
+        }
+
+        private void ProcessConnectionMessages(string messageType, string message)
+        {
+            if (ConnectionMessageUtils.GetType(messageType, out Type type))
+            {
+                ConnectionListener?.OnProcess(JsonUtility.FromJson(message, type), type);
+            }
+            else
+            {
+                Log.Error($"Unable to parse type: {messageType}");
             }
         }
 

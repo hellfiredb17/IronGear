@@ -107,6 +107,7 @@
     <Compile Include="Assets\Scripts\Menus\MenuBase.cs" />
     <Compile Include="Assets\Scripts\Menus\MenuManager.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\ClientConnection.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\ClientConnectionInterface.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\ClientNetworkBridge.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\UnityClient.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Client\UnityLogger.cs" />
@@ -116,12 +117,15 @@
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Dedi\Server.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Dedi\UnityServer.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\ConnectionMessages\ConnectionMessages.cs" />
-    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\LobbyMessages\ILobbyListeners.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\LobbyMessages\LobbyMessages.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\NetMessage\NetMessage.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetworkListeners\IConnectionListeners.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetworkListeners\ILobbyListeners.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\NetworkListeners\INetworkListener.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Packet\NetworkPacket.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Connection.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\ILog.cs" />
+    <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Models\ConnectionStates.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\Models\LobbyStates.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\SharedConstants.cs" />
     <Compile Include="Assets\Scripts\Networking\Hawkeye\Shared\SharedEnums.cs" />

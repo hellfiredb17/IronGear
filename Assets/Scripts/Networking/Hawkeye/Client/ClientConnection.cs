@@ -11,6 +11,7 @@ namespace Hawkeye
         //---- NetMessage Listeners
         //-------------------------
         public ILobbyClientListener LobbyListener;
+        public IClientConnectionListener ConnectionListener;
 
         //---- Ctor
         //---------
@@ -29,10 +30,7 @@ namespace Hawkeye
                 SendBufferSize = SharedConsts.DATABUFFERSIZE
             };
             readBuffer = new byte[SharedConsts.DATABUFFERSIZE];
-            Socket.BeginConnect(ipaddress, port, ConnectCallback, new ConnectionState()
-            {
-                NetworkId = "DEBUG"
-            });
+            Socket.BeginConnect(ipaddress, port, ConnectCallback, null);
         }
 
         private void ConnectCallback(IAsyncResult result)
@@ -44,11 +42,7 @@ namespace Hawkeye
             }
 
             Log?.Output("[Client]: Connected to server");
-            Status = SharedEnums.ConnectionStatus.Connect;
-
-            // DEBUG for now just setting player id as const string but this will either come from
-            // sign in, or another way to track players
-            NetworkId = (result.AsyncState as ConnectionState).NetworkId;
+            Status = SharedEnums.ConnectionStatus.Connect;           
 
             // start reading data
             stream = Socket.GetStream();
@@ -59,27 +53,43 @@ namespace Hawkeye
         //------------------
         protected override void ProcessNetMessage(string interfaceType, string messageType, string message)
         {
-            switch(NetMessageUtils.GetInterfaceType(interfaceType))
+            Type type;
+            object netMessage = null;
+
+            switch (NetMessageUtils.GetInterfaceType(interfaceType))
             {
                 case InterfaceTypes.None:
+                    break;
+                case InterfaceTypes.Connection:
+                    if(ConnectionListener == null)
+                    {
+                        Log.Error("Connection listener is null, did you forget to set it?");
+                        return;
+                    }
+                    
+                    if(!ConnectionMessageUtils.GetType(messageType, out type))
+                    {
+                        Log.Error($"Unable to parse connection message type: {messageType}");
+                        return;
+                    }
+                    netMessage = JsonUtility.FromJson(message, type);
+                    ConnectionListener.OnProcess(netMessage, type);
                     break;
                 case InterfaceTypes.Lobby:
                     if(LobbyListener == null)
                     {
-                        Debug.LogError("Lobby listener is null, did you forget to set it?");
+                        Log.Error("Lobby listener is null, did you forget to set it?");
                         return;
                     }
-
-                    Type type;
+                    
                     if(!LobbyMessageUtils.GetType(messageType, out type))
                     {
-                        Debug.LogError($"Unable to get message type: {messageType} is it added to dictionary?");
+                        Log.Error($"Unable to get message type: {messageType} is it added to dictionary?");
                         return;
                     }
-                    object netMessage = JsonUtility.FromJson(message, type);
+                    netMessage = JsonUtility.FromJson(message, type);
                     LobbyListener.OnProcess(netMessage, type);
-                    break;
-                // TODO any other interfaces here
+                    break;                
             }
         }
 

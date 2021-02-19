@@ -1,20 +1,12 @@
 ﻿using System;
-using Hawkeye.Models;
+using Hawkeye.NetMessages;
 
-namespace Hawkeye.NetMessages
+namespace Hawkeye
 {
-    //---------- ILobby Listener -----------------
-    // Base listener class dedi/client share - if any
-    //--------------------------------------------
-    public interface ILobbyListener
-    {
-        void OnProcess(object netMessage, Type type);
-    }
-
     //---------- ILobby Dedi Listener ------------
     // Listener that handles messages from clients
     //--------------------------------------------
-    public interface ILobbyDediListener : ILobbyListener
+    public interface ILobbyDediListener : INetworkListener
     {
         void OnCreateLobby(CreateLobby createLobby);
         void OnRequestLobbyList(ResponseLobbyList responseLobbyList);
@@ -27,7 +19,7 @@ namespace Hawkeye.NetMessages
     //---------- ILobby Client Listener ----------
     // Listener that handles message from dedi
     //--------------------------------------------
-    public interface ILobbyClientListener : ILobbyListener
+    public interface ILobbyClientListener : INetworkListener
     {    
         void OnUpdateLobbyState(UpdateLobbyState updateLobbyState);
         void OnResponseLobbyList(ResponseLobbyList responseLobbyList);

@@ -2,7 +2,7 @@
 using Hawkeye.NetMessages;
 using Hawkeye.Models;
 
-public class ClientNetworkBridge : ILobbyClientListener
+public class ClientNetworkBridge // : ILobbyClientListener
 {
     //---- Events
     //-----------
